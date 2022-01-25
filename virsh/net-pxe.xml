@@ -1,0 +1,5 @@
+<network>
+  <name>pxe</name>
+  <forward mode="bridge"/>
+  <bridge name="pxe-nic"/>
+</network>

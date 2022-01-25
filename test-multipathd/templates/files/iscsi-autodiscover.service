@@ -1,0 +1,8 @@
+[Unit]
+After=iscsi.service
+[Service]
+Environment=ISCSI_TARGETS=192.168.130.10,192.168.131.10
+Type=oneshot
+ExecStart=/usr/local/bin/setup-iscsi.sh
+[Install]
+WantedBy=multi-user.target

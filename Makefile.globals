@@ -1,0 +1,30 @@
+SHELL := bash
+SSH_KEY=$(HOME)/.ssh/id_rsa.pub
+API_URL=https://api.openshift.com/api/assisted-install
+DISK_SIZE=120
+IMG_DIR=/home/images
+ISO_DIR=/home/isos
+PXE_DIR=$(HOME)/iso2pxe
+PXE_NET=pxe
+PXE_ADDRESS=192.168.125.1
+NET_MAIN_INTERFACE=eno1
+
+CLUSTER_DIR=clusters/$(NAME)
+CLUSTER_ID=$(shell test -e $(CLUSTER_DIR)/cluster.json && jq -r .id $(CLUSTER_DIR)/cluster.json)
+
+# Aliased commands
+kcli=podman run --net host -it --rm --security-opt label=disable -v $(ISO_DIR):$(ISO_DIR) -v $(IMG_DIR):$(IMG_DIR) -v $(HOME)/.ssh:/root/.ssh -v $(HOME)/.kcli:/root/.kcli -v /var/lib/libvirt/images:/var/lib/libvirt/images -v /var/run/libvirt:/var/run/libvirt -v $(PWD):/workdir -v /var/tmp:/ignitiondir quay.io/karmab/kcli
+apicurl=bin/apicurl
+
+default: help
+
+help:   ## Shows this message.
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | perl -pe 's/^.*Makefile.*?://g' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+clusterid: ## Show cluster id
+	@echo $(CLUSTER_ID)
+
+kubeconfig: ## Get kubeconfig
+	$(apicurl) $(API_URL)/v2/clusters/$(CLUSTER_ID)/downloads/credentials-presigned?file_name=kubeconfig-noingress| jq -r .url | xargs wget -O $(CLUSTER_DIR)/kubeconfig
+
+.PHONY: help

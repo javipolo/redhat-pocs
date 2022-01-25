@@ -1,0 +1,30 @@
+SHELL := bash
+TARGET_DIR=/home/targets
+IQN=iqn.2022-01.com.redhat.javipolo
+
+default: help
+
+deps: ## Install dependencies
+	dnf install -y targetcli
+	systemctl start target
+	systemctl enable target
+
+target: ## Set up iSCSI targets
+	mkdir -p $(TARGET_DIR)
+	targetcli /backstores/fileio create disk0 $(TARGET_DIR)/disk0.img 120G
+	targetcli /iscsi create $(IQN):disk0
+	targetcli /iscsi/$(IQN):disk0/tpg1/luns create /backstores/fileio/disk0
+	targetcli /iscsi/$(IQN):disk0/tpg1/acls
+	targetcli /iscsi/$(IQN):disk0/tpg1/acls create $(IQN):test0
+
+
+clean: ## Set up iSCSI targets
+	targetcli /iscsi delete $(IQN):disk0
+	targetcli /backstores/fileio delete disk0
+	rm -f $(TARGET_DIR)disk0.img
+
+
+help:   ## Shows this message.
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: help

@@ -1,0 +1,69 @@
+{
+  "static_network_config": [
+    {
+      "network_yaml": "interfaces:\n- name: bond0\n  type: bond\n  state: up\n  ipv4:\n    dhcp: true\n    enabled: true\n  link-aggregation:\n    mode: balance-rr\n    options:\n      miimon: '140'\n    slaves:\n    - ens3\n    - ens4",
+      "mac_interface_map": [
+        {
+          "mac_address": "de:ad:de:ad:00:00",
+          "logical_nic_name": "ens3"
+        },
+        {
+          "mac_address": "de:ad:de:ad:00:01",
+          "logical_nic_name": "ens4"
+        }
+      ]
+    },
+    {
+      "network_yaml": "interfaces:\n- name: bond0\n  type: bond\n  state: up\n  ipv4:\n    dhcp: true\n    enabled: true\n  link-aggregation:\n    mode: balance-rr\n    options:\n      miimon: '140'\n    slaves:\n    - ens3\n    - ens4",
+      "mac_interface_map": [
+        {
+          "mac_address": "de:ad:de:ad:00:02",
+          "logical_nic_name": "ens3"
+        },
+        {
+          "mac_address": "de:ad:de:ad:00:03",
+          "logical_nic_name": "ens4"
+        }
+      ]
+    },
+    {
+      "network_yaml": "interfaces:\n- name: bond0\n  type: bond\n  state: up\n  ipv4:\n    dhcp: true\n    enabled: true\n  link-aggregation:\n    mode: balance-rr\n    options:\n      miimon: '140'\n    slaves:\n    - ens3\n    - ens4",
+      "mac_interface_map": [
+        {
+          "mac_address": "de:ad:de:ad:00:04",
+          "logical_nic_name": "ens3"
+        },
+        {
+          "mac_address": "de:ad:de:ad:00:05",
+          "logical_nic_name": "ens4"
+        }
+      ]
+    },
+    {
+      "network_yaml": "interfaces:\n- name: bond0\n  type: bond\n  state: up\n  ipv4:\n    dhcp: true\n    enabled: true\n  link-aggregation:\n    mode: balance-rr\n    options:\n      miimon: '140'\n    slaves:\n    - ens3\n    - ens4",
+      "mac_interface_map": [
+        {
+          "mac_address": "de:ad:de:ad:00:06",
+          "logical_nic_name": "ens3"
+        },
+        {
+          "mac_address": "de:ad:de:ad:00:07",
+          "logical_nic_name": "ens4"
+        }
+      ]
+    },
+    {
+      "network_yaml": "interfaces:\n- name: bond0\n  type: bond\n  state: up\n  ipv4:\n    dhcp: true\n    enabled: true\n  link-aggregation:\n    mode: balance-rr\n    options:\n      miimon: '140'\n    slaves:\n    - ens3\n    - ens4",
+      "mac_interface_map": [
+        {
+          "mac_address": "de:ad:de:ad:00:08",
+          "logical_nic_name": "ens3"
+        },
+        {
+          "mac_address": "de:ad:de:ad:00:09",
+          "logical_nic_name": "ens4"
+        }
+      ]
+    }
+  ]
+}

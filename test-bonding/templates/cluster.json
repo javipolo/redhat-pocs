@@ -1,0 +1,5 @@
+{
+  "name": "${cluster_name}",
+  "openshift_version": "4.9.9",
+  "base_dns_domain": "redhat.com"
+}

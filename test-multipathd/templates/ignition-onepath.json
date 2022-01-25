@@ -1,0 +1,38 @@
+{
+  "ignition": {
+    "version": "3.1.0"
+  },
+  "storage": {
+    "files": [
+      {
+        "contents": {
+          "source": "data:text/plain;charset=utf-8;base64,SW5pdGlhdG9yTmFtZT1pcW4uMjAyMi0wMS5jb20ucmVkaGF0Lmphdmlwb2xvOnRlc3QwCg=="
+        },
+        "filesystem": "root",
+        "mode": 420,
+        "path": "/etc/iscsi/initiatorname.iscsi"
+      },
+      {
+        "contents": {
+          "source": "data:text/plain;charset=utf-8;base64,IyEvYmluL3NoCgplY2hvICRJU0NTSV9UQVJHRVRTIHwgdHIgLCAnICcgfCB4YXJncyAtLW1heC1hcmdzIDEgLS1uby1ydW4taWYtZW1wdHkgaXNjc2lhZG0gLW0gZGlzY292ZXJ5IC10IHNlbmR0YXJnZXRzIC1wCmlzY3NpYWRtIC1tIG5vZGUgLS1sb2dpbgo="
+        },
+        "filesystem": "root",
+        "mode": 493,
+        "path": "/usr/local/bin/setup-iscsi.sh"
+      }
+    ]
+  },
+  "systemd": {
+    "units": [
+      {
+        "name": "iscsid.service",
+        "enabled": true
+      },
+      {
+        "name": "iscsi-autodiscover.service",
+        "enabled": true,
+        "contents": "[Unit]\nAfter=iscsi.service\n[Service]\nEnvironment=ISCSI_TARGETS=192.168.125.128\nType=oneshot\nExecStart=/usr/local/bin/setup-iscsi.sh\n[Install]\nWantedBy=multi-user.target"
+      }
+    ]
+  }
+}

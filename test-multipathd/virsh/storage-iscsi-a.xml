@@ -1,0 +1,13 @@
+<pool type='iscsi'>
+    <name>iscsi-a</name>
+    <source>
+        <host name='192.168.130.10'/>
+        <device path='iqn.2022-01.com.redhat.javipolo:disk'/>
+    </source>
+   <initiator>
+        <iqn name="iqn.2022-01.com.redhat.javipolo:initiator1"/>
+    </initiator>
+    <target>
+        <path>/dev/disk/by-path</path>
+    </target>
+</pool>

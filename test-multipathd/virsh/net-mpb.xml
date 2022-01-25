@@ -1,0 +1,5 @@
+<network>
+  <name>mpb</name>
+  <forward mode="bridge"/>
+  <bridge name="mpb-nic"/>
+</network>

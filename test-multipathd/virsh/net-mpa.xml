@@ -1,0 +1,5 @@
+<network>
+  <name>mpa</name>
+  <forward mode="bridge"/>
+  <bridge name="mpa-nic"/>
+</network>

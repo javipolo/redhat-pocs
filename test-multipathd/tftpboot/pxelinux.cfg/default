@@ -1,0 +1,26 @@
+DEFAULT menu.c32
+TIMEOUT 20
+PROMPT 0
+TIMEOUT 60
+
+MENU TITLE IPXE boot
+
+LABEL IPXE boot iSCSI against 192.168.125.128
+  KERNEL ipxe.lkrn
+  APPEND dhcp && chain http://192.168.125.1:8000/javipolo-mpath/ipxe-iscsi-128
+
+LABEL IPXE autodiscovery with kernel arg only
+  KERNEL ipxe.lkrn
+  APPEND dhcp && chain http://192.168.125.1:8000/javipolo-mpath/ipxe-kmpath
+
+LABEL IPXE install net 128
+  KERNEL ipxe.lkrn
+  APPEND dhcp && chain http://192.168.125.1:8000/javipolo-mpath/ipxe-128
+
+LABEL IPXE boot from iSCSI
+  KERNEL ipxe.lkrn
+  APPEND dhcp && chain http://192.168.125.1:8000/javipolo-mpath/ipxe-iscsi
+
+LABEL IPXE javipolo-mpath install
+  KERNEL ipxe.lkrn
+  APPEND dhcp && chain http://192.168.125.1:8000/javipolo-mpath/ipxe

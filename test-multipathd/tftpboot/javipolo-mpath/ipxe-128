@@ -1,0 +1,5 @@
+#!ipxe
+set live_url http://192.168.125.1:8000/javipolo-mpath
+kernel ${live_url}/vmlinuz ignition.config.url=${live_url}/ignition-128.ign coreos.live.rootfs_url=${live_url}/rootfs.img random.trust_cpu=on rd.luks.options=discard ignition.firstboot ignition.platform.id=metal
+initrd ${live_url}/initrd.img
+boot

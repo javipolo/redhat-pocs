@@ -1,0 +1,22 @@
+{
+  "static_network_config": [
+    {
+      "network_yaml": "
+      interfaces:
+      - name: bond0
+      type: bond
+      state: up
+      ipv4:
+      dhcp: true
+      enabled: true
+      link-aggregation:
+      mode: balance-rr
+      options:
+      miimon: '140'
+      slaves:
+      - ens3
+      - ens4
+      "
+    }
+  ]
+}

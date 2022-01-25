@@ -1,0 +1,5 @@
+#!ipxe
+set live_url http://192.168.125.1:8000/javipolo-mpath
+set initiator-iqn iqn.2022-01.com.redhat.javipolo:test0
+sanboot iscsi:192.168.130.10::::iqn.2022-01.com.redhat.javipolo:disk0
+boot

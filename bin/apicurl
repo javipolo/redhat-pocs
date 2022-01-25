@@ -1,0 +1,13 @@
+auth="Authorization: Bearer $(ocm token)"
+
+debug=""
+content=application/json
+
+[ "$1" == "--debug" ] && { debug=echo ; shift; }
+[ "$1" == "--bin" ] && { content=application/octet-stream ; shift; }
+
+$debug curl -s \
+  -H "${auth}" \
+  -H "Accept: $content" \
+  -H "Content-Type: $content" \
+  $@
