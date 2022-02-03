@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+
+# Manage cloudformation stacks using stack.params files to save parameters
+
+# ## Example of stack.params file
+# stackname=mystack
+# stackfile=mystacktemplate.yaml
+# region=us-east-1
+# cf_parameters='Param1 Param2 Param3'
+# Param1=foo
+# Param2=bar
+# Param3=baz
+
+set -e
+
+usage(){
+    cat << EOF
+    Manage cloudformation stacks using stack.params files to save parameters
+
+    Usage:
+        $0 [--debug] <auto|create|update|delete|changeset name> stack.params
+
+    Action can be one of:
+        create                      - Create new stack
+        update                      - Update existing stack
+        delete                      - Delete stack
+        auto                        - Guess if to create or update stack
+        changeset changesetname     - Create a changeset for an existing stack
+EOF
+    exit 1
+}
+
+[ "$1" == "--debug" ] && { debug="echo" && shift ; } || debug=""
+
+case $1 in
+  auto) action="auto" ;;
+  create) action="create-stack" ;;
+  create) action="create-stack" ;;
+  delete) action="delete-stack" ;;
+  changeset)
+    changesetname="$2" && shift
+    action="create-change-set"
+    extra_params="$extra_params --change-set-name $changesetname"
+    ;;
+  *) usage ;;
+esac
+
+basedir=$(dirname $2)
+params=${2%.params}.params
+profile=default
+
+create_parameters(){
+    for i in $@; do
+        echo ParameterKey=${i},ParameterValue=${!i}
+    done
+}
+
+cf_params=cf_parameters
+
+[ -f ${params} ] && source ${params} || usage
+[ -f ${stackfile} ] || usage
+
+aws="aws --region $region --profile $profile"
+
+if [ "$action" == "auto" ]; then
+    if $aws cloudformation describe-stacks --stack-name ${stackname} >/dev/null 2>&1; then
+        action="update-stack"
+    else
+        action="create-stack"
+    fi
+fi
+
+aws="$debug $aws"
+
+echo "$stackname - $action $changesetname"
+
+if [ "$action" == "delete-stack" ]; then
+    $aws cloudformation ${action} \
+        --stack-name ${stackname}
+    exit $?
+fi
+
+$aws cloudformation validate-template --template-body file://${basedir}/${stackfile} > /dev/null || (echo "Invalid json in template ${stackfile}, please review it" && exit 1)
+
+$aws cloudformation ${action} \
+    --template-body file://${stackfile} \
+    --stack-name ${stackname} \
+    --capabilities CAPABILITY_NAMED_IAM \
+    $extra_params \
+    --parameters $(create_parameters ${!cf_params})

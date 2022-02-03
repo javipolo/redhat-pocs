@@ -1,0 +1,255 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Openshift Cluster provisioned via iPXE
+
+Parameters:
+  ClusterName:
+    Type: String
+  DomainName:
+    Type: String
+  WebServer:
+    Type: String
+  VpcId:
+    Type: String
+  Subnet:
+    Type: String
+  SubnetCIDR:
+    Type: String
+  AvailabilityZone:
+    Type: String
+  InstanceType:
+    Default: t3.xlarge
+    Type: String
+  KeyName:
+    Type: AWS::EC2::KeyPair::KeyName
+  AMI:
+    Type: String
+    Default: ami-0e020666773ca11a3
+  LoadBalancerScheme:
+    Type: String
+    Default: internal
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: !Ref ClusterName
+      SecurityGroupIngress:
+        - IpProtocol: "-1"
+          CidrIp: !Ref SubnetCIDR
+
+  LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Ref ClusterName
+      LaunchTemplateData:
+        BlockDeviceMappings:
+          - DeviceName: /dev/sda1
+            Ebs:
+              VolumeSize: 120
+              DeleteOnTermination: true
+        ImageId: !Ref AMI
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        SecurityGroupIds:
+          - !GetAtt SecurityGroup.GroupId
+        UserData:
+          Fn::Base64: !Sub |
+            #!ipxe
+            set web ${WebServer}
+            kernel ${!web}/vmlinuz coreos.live.rootfs_url=${!web}/rootfs.img ignition.config.url=${!web}/config.ign ignition.firstboot ignition.platform.id=metal ip=dhcp
+            initrd ${!web}/initrd.img
+            boot
+
+  Instance01:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-01
+
+  Instance02:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-02
+
+  Instance03:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-03
+
+  Instance04:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-04
+
+  Instance05:
+    Type: AWS::EC2::Instance
+    Properties:
+      LaunchTemplate:
+        LaunchTemplateId: !Ref LaunchTemplate
+        Version: !GetAtt LaunchTemplate.LatestVersionNumber
+      AvailabilityZone: !Ref AvailabilityZone
+      Tags:
+        - Key: Name
+          Value: !Sub ${ClusterName}-05
+
+  TargetGroupAPI:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${ClusterName}-api
+      Port: 6443
+      Protocol: TCP
+      TargetType: ip
+      VpcId: !Ref VpcId
+      Targets:
+        - Id: !GetAtt Instance01.PrivateIp
+        - Id: !GetAtt Instance02.PrivateIp
+        - Id: !GetAtt Instance03.PrivateIp
+        - Id: !GetAtt Instance04.PrivateIp
+        - Id: !GetAtt Instance05.PrivateIp
+
+  TargetGroupMC:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${ClusterName}-mc
+      Port: 22623
+      Protocol: TCP
+      TargetType: ip
+      VpcId: !Ref VpcId
+      Targets:
+        - Id: !GetAtt Instance01.PrivateIp
+        - Id: !GetAtt Instance02.PrivateIp
+        - Id: !GetAtt Instance03.PrivateIp
+        - Id: !GetAtt Instance04.PrivateIp
+        - Id: !GetAtt Instance05.PrivateIp
+
+  TargetGroupHTTP:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${ClusterName}-http
+      Port: 80
+      Protocol: TCP
+      TargetType: ip
+      VpcId: !Ref VpcId
+      Targets:
+        - Id: !GetAtt Instance01.PrivateIp
+        - Id: !GetAtt Instance02.PrivateIp
+        - Id: !GetAtt Instance03.PrivateIp
+        - Id: !GetAtt Instance04.PrivateIp
+        - Id: !GetAtt Instance05.PrivateIp
+
+  TargetGroupHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub ${ClusterName}-https
+      Port: 443
+      Protocol: TCP
+      TargetType: ip
+      VpcId: !Ref VpcId
+      Targets:
+        - Id: !GetAtt Instance01.PrivateIp
+        - Id: !GetAtt Instance02.PrivateIp
+        - Id: !GetAtt Instance03.PrivateIp
+        - Id: !GetAtt Instance04.PrivateIp
+        - Id: !GetAtt Instance05.PrivateIp
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: !Ref ClusterName
+      Scheme: !Ref LoadBalancerScheme
+      Subnets:
+        - !Ref Subnet
+      Type: network
+
+  LoadBalancerAPI:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 6443
+      Protocol: TCP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupAPI
+
+  LoadBalancerMC:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 22623
+      Protocol: TCP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupMC
+
+  LoadBalancerHTTP:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: TCP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupHTTP
+
+  LoadBalancerHTTPS:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 443
+      Protocol: TCP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroupHTTPS
+
+  DNSHostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Sub ${ClusterName}.${DomainName}
+      VPCs:
+        - VPCId: !Ref VpcId
+          VPCRegion: !Ref AWS::Region
+
+  DNSRecordSetGroup:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneId: !Ref DNSHostedZone
+      RecordSets:
+        - Name: !Sub "api.${ClusterName}.${DomainName}."
+          Type: CNAME
+          TTL: 60
+          ResourceRecords:
+            - !GetAtt LoadBalancer.DNSName
+        - Name: !Sub "api-int.${ClusterName}.${DomainName}."
+          Type: CNAME
+          TTL: 60
+          ResourceRecords:
+            - !GetAtt LoadBalancer.DNSName
+        - Name: !Sub "*.apps.${ClusterName}.${DomainName}."
+          Type: CNAME
+          TTL: 60
+          ResourceRecords:
+            - !GetAtt LoadBalancer.DNSName

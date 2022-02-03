@@ -1,0 +1,15 @@
+stackname=javipolo-openshift-ipxe-multi
+stackfile=ocp-ai-aws.yaml
+region=eu-west-3
+
+cf_parameters='ClusterName DomainName WebServer VpcId Subnet SubnetCIDR AvailabilityZone InstanceType KeyName'
+
+ClusterName=javipolo-aws-ipxe-multi
+DomainName=redhat.com
+WebServer=http://172.31.80.100/javipolo-aws-ipxe-multi
+InstanceType=t3.xlarge
+KeyName=mysecretkey
+VpcId=vpc-2a3c5ba9626aa6c8a
+AvailabilityZone=eu-west-3
+Subnet=subnet-01a7e32b0e6539470
+SubnetCIDR=172.31.80.0/24
