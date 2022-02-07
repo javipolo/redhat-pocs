@@ -1,0 +1,16 @@
+# Provision http server
+
+default: help
+
+setup: ## Setup all the needed tools
+	sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+	sudo sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+	sudo dnf install -y epel-release
+	sudo dnf install -y bash-completion jq nginx p7zip-plugins wget
+	sudo sed -i 's%/usr/share/nginx/html%/var/www%g' /etc/nginx/nginx.conf
+	sudo systemctl enable --now nginx
+
+help:   ## Shows this message.
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | perl -pe 's/^.*Makefile.*?://g' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+.PHONY: help
