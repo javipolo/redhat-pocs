@@ -11,10 +11,12 @@ NET_MAIN_INTERFACE=eno1
 
 CLUSTER_DIR=clusters/$(NAME)
 CLUSTER_ID=$(shell test -e $(CLUSTER_DIR)/cluster.json && jq -r .id $(CLUSTER_DIR)/cluster.json)
+git_root=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+PULL_SECRET=$(git_root)/pull-secret.json
 
 # Aliased commands
 kcli=podman run --net host -it --rm --security-opt label=disable -v $(ISO_DIR):$(ISO_DIR) -v $(IMG_DIR):$(IMG_DIR) -v $(HOME)/.ssh:/root/.ssh -v $(HOME)/.kcli:/root/.kcli -v /var/lib/libvirt/images:/var/lib/libvirt/images -v /var/run/libvirt:/var/run/libvirt -v $(PWD):/workdir -v /var/tmp:/ignitiondir quay.io/karmab/kcli
-apicurl=bin/apicurl
+apicurl=$(git_root)/bin/apicurl
 
 default: help
 

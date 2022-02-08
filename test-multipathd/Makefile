@@ -3,7 +3,6 @@ include ../Makefile.globals
 NAME=javipolo-mpath
 SNO_NAME=mpath-sno
 
-PULL_SECRET=../pull-secret.json
 MPATH_A_NET=mpa
 MPATH_A_ADDRESS=192.168.130.1
 MPATH_B_NET=mpb

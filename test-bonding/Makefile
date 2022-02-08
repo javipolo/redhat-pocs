@@ -1,7 +1,6 @@
 include ../Makefile.globals
 
 NAME=javipolo-bond-01
-PULL_SECRET=../pull-secret.json
 
 cluster: ## Create cluster
 	mkdir -p $(CLUSTER_DIR)
