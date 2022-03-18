@@ -38,6 +38,13 @@ pxe-clean: ## Stop iso2pxe
 pxe-debug: ## Debug pxe instance
 	podman exec -it pxe bash
 
+nfs: ## Provision nfs server
+	sudo mkdir -p $(NFS_DIR)
+	sudo dnf install -y nfs-utils
+	sudo systemctl enable --now nfs-server
+	grep -q '^$(NFS_DIR) ' /etc/exports || echo '$(NFS_DIR) $(NFS_CIDR)(rw,no_root_squash)' | sudo tee -a /etc/exports
+	sudo exportfs -r
+
 deps: ## Install dependencies
 	dnf install -y \
 	  jq \
@@ -51,7 +58,7 @@ deps: ## Install dependencies
 	dnf group install -y "Virtualization Host"
 	systemctl start libvirtd
 	systemctl enable libvirtd
-	curl -L https://github.com/openshift-online/ocm-cli/releases/download/v0.1.58/ocm-linux-amd64 -o /usr/local/bin/ocm
+	curl -L https://github.com/openshift-online/ocm-cli/releases/download/v0.1.60/ocm-linux-amd64 -o /usr/local/bin/ocm
 	chmod +x /usr/local/bin/ocm
 	curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz | sudo tar xvzC usr/local/bin
 	curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash

@@ -1,3 +1,2 @@
-.auth
-pull-secret.json
-clusters
+config_credentials.sh
+*/clusters
