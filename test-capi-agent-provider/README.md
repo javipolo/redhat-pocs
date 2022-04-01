@@ -72,12 +72,7 @@ cat  dev-scripts/ocp/hub/saved-assets/assisted-installer-manifests/06-extra-host
 oc get -n $NAMESPACE agent -w
 
 # Now we can create our openshift cluster
-# Get infraenv id
-INFRAID=$(oc get infraenv $INFRAENV -n $NAMESPACE -o json| jq -r .status.isoDownloadURL | awk -F/ '{print $NF}'| cut -d \? -f 1)
-echo $INFRAID
-
-# Create hypershift cluster
-hypershift create cluster agent --name $CLUSTERNAME --base-domain $BASEDOMAIN --pull-secret /working_dir/pull_secret.json  --ssh-key $SSHKEY --agent-namespace $NAMESPACE --namespace $NAMESPACE --infra-id=$INFRAID
+hypershift create cluster agent --name $CLUSTERNAME --base-domain $BASEDOMAIN --pull-secret /working_dir/pull_secret.json  --ssh-key $SSHKEY --agent-namespace $NAMESPACE --namespace $NAMESPACE
 
 # Wait for everything to be OK
 oc get po -n $NAMESPACE-$CLUSTERNAME -w
