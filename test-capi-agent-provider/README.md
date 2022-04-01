@@ -70,7 +70,7 @@ EOF
 # We should now wait for the ISO image to be created, then we can create the BareMetalHost resources
 # If we dont wait enough time we risk that ISO cannot be fetched and hosts start with ironic IPA instead of discovery ISO
 oc get po -wA|grep -vE 'Completed|Running'
-oc get infraenv $INFRAENV -n $NAMESPACE -o yaml| yq -r .status.isoDownloadURL| xargs curl -kI
+oc get infraenv $INFRAENV -n $NAMESPACE -o json| jq -r .status.isoDownloadURL| xargs curl -kI
 
 # Create BareMetalHosts
 cat  dev-scripts/ocp/hub/saved-assets/assisted-installer-manifests/06-extra-host-manifests.yaml | sed "s/assisted-installer/$NAMESPACE/g; s/myinfraenv/$INFRAENV/g" | oc apply -f -
@@ -80,7 +80,7 @@ oc get -n $NAMESPACE agent -w
 
 # Now we can create our openshift cluster
 # Get infraenv id
-INFRAID=$(oc get infraenv $INFRAENV -n $NAMESPACE -o yaml| yq -r .status.isoDownloadURL | awk -F/ '{print $NF}'| cut -d \? -f 1)
+INFRAID=$(oc get infraenv $INFRAENV -n $NAMESPACE -o json| jq -r .status.isoDownloadURL | awk -F/ '{print $NF}'| cut -d \? -f 1)
 echo $INFRAID
 
 # Create hypershift cluster
