@@ -33,13 +33,6 @@ HYPERSHIFT_IMAGE=quay.io/hypershift/hypershift-operator:latest
 podman pull $HYPERSHIFT_IMAGE
 alias hypershift="podman run --net host --rm --entrypoint /usr/bin/hypershift -e KUBECONFIG=/working_dir/dev-scripts/ocp/hub/auth/kubeconfig -v $HOME/.ssh:/root/.ssh -v $(pwd):/working_dir $HYPERSHIFT_IMAGE"
 hypershift install --hypershift-image $HYPERSHIFT_IMAGE
-# Patch hypershift-operator clusterrole (workaround)
-patch='[
-{"op":"add","path":"/rules/-","value":{"apiGroups":["extensions.hive.openshift.io"],"resources":["agentclusterinstalls"],"verbs":["*"]}},
-{"op":"add","path":"/rules/-","value":{"apiGroups":["hive.openshift.io"],"resources":["clusterdeployments"],"verbs":["*"]}},
-{"op":"add","path":"/rules/-","value":{"apiGroups":["cluster.open-cluster-management.io"],"resources":["managedclustersets/join"],"verbs":["create"]}}
-]'
-oc patch clusterrole hypershift-operator --type json -p "$patch"
 
 # Create namespace
 oc create namespace $NAMESPACE
@@ -84,9 +77,7 @@ INFRAID=$(oc get infraenv $INFRAENV -n $NAMESPACE -o json| jq -r .status.isoDown
 echo $INFRAID
 
 # Create hypershift cluster
-# hypershift create cluster agent --name $CLUSTERNAME --base-domain $BASEDOMAIN --pull-secret /working_dir/pull_secret.json  --ssh-key $SSHKEY --agent-namespace $NAMESPACE --namespace $NAMESPACE --infra-id=$INFRAID
-# temporary workaround
-hypershift create cluster agent --name $CLUSTERNAME --base-domain $BASEDOMAIN --pull-secret /working_dir/pull_secret.json  --ssh-key $SSHKEY --agent-namespace $NAMESPACE --namespace $NAMESPACE --infra-id=$INFRAID --control-plane-operator-image=$HYPERSHIFT_IMAGE
+hypershift create cluster agent --name $CLUSTERNAME --base-domain $BASEDOMAIN --pull-secret /working_dir/pull_secret.json  --ssh-key $SSHKEY --agent-namespace $NAMESPACE --namespace $NAMESPACE --infra-id=$INFRAID
 
 # Wait for everything to be OK
 oc get po -n $NAMESPACE-$CLUSTERNAME -w
