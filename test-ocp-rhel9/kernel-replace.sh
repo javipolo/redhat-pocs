@@ -3,8 +3,8 @@
 set -e
 
 rpm_url=http://download.eng.bos.redhat.com/rhel-9/nightly/RHEL-9/latest-RHEL-9/compose/BaseOS/x86_64/os/Packages
-version=5.14.0-73.el9
 arch=x86_64
+version=$(curl -sL $rpm_url | awk -F\" '/kernel-5/{print $6}'| sed -E "s/kernel-(.+).${arch}.rpm\$/\1/")
 packages='kernel kernel-core kernel-modules kernel-modules-extra'
 
 # Allow pods in default namespace to create privileged containers
