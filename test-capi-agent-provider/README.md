@@ -3,7 +3,7 @@
 ## Prerequisites
 - Save the secret obtained from [cloud.openshift.com](https://cloud.redhat.com/openshift/install/pull-secret) to
 `pull_secret.json`
-- provision a HUB cluster. For simplicity we will deploy the cluster using [https://github.com/openshift-metal3/dev-scripts|dev-scripts]
+- provision a HUB cluster. For simplicity we will deploy the cluster using [dev-scripts](https://github.com/openshift-metal3/dev-scripts)
 
 
 ### Deploying a HUB cluster using dev-scripts
