@@ -23,6 +23,7 @@ We will download the discovery iso, copy the required files to a webserver and t
     ```
 
 3. Copy the files to a webserver. In this example we will install a webserver in the same host
+   Note that you need to allow HTTP traffic to this server (via SecurityGroup, firewalld or whatever you're using)
     ```
     # Install nginx
     sudo dnf install -y nginx
@@ -33,7 +34,8 @@ We will download the discovery iso, copy the required files to a webserver and t
     sudo cp -vr /var/tmp/discovery-files /var/www
 
     # Update selinux security context if needed
-    sudo chcon -Rt httpd_sys_content_t /var/tmp/discovery-files
+    sudo chcon -Rt httpd_sys_content_t /var/www/discovery-files
+
     ```
 
 4. Create a new AWS EC2 instance
