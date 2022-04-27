@@ -7,10 +7,15 @@ arch=x86_64
 version=$(curl -sL $rpm_url | awk -F\" '/kernel-5/{print $6}'| sed -E "s/kernel-(.+).${arch}.rpm\$/\1/")
 packages='kernel kernel-core kernel-modules kernel-modules-extra'
 
-# Allow pods in default namespace to create privileged containers
-oc adm policy add-scc-to-user privileged -z default
+namespace=kernel-replace
 
-cat <<EOF | oc apply -f -
+oc create namespace $namespace
+# Allow pods to create privileged containers in namespace
+oc adm policy add-scc-to-user privileged -z $namespace
+# Disable warnings about creating privileged containers in namespace
+kubectl label --overwrite namespace $namespace pod-security.kubernetes.io/warn=privileged
+
+cat <<EOF | oc apply -n $namespace -f -
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -61,7 +66,7 @@ EOF
 
 cm_id=$(oc get configmap kernel-replace -o jsonpath={.metadata.resourceVersion})
 
-cat <<EOF | oc apply -f -
+cat <<EOF | oc apply -n $namespace -f -
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
