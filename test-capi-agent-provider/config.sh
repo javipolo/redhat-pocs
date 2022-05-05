@@ -5,7 +5,7 @@ export CI_TOKEN='mysecrettoken'
 source ~/secrets.sh
 
 # Cluster name
-export CLUSTER_NAME="hub"
+export CLUSTER_NAME="dev"
 # Domain name
 export BASE_DOMAIN="redhat.com"
 

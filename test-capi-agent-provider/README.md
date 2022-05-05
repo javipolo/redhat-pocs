@@ -14,7 +14,7 @@ cd dev-scripts
 ln -s ../config.sh config_$USER.sh
 ln -s ../pull_secret.json
 make all assisted
-cp ocp/hub/auth/kubeconfig ~/.kube/config
+cp ocp/dev/auth/kubeconfig ~/.kube/config
 oc patch storageclass assisted-service -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 oc patch provisioning provisioning-configuration --type merge -p '{"spec":{"watchAllNamespaces": true}}'
 cd ..
@@ -31,7 +31,7 @@ SSHKEY=~/.ssh/id_rsa.pub
 # Install hypershift
 HYPERSHIFT_IMAGE=quay.io/hypershift/hypershift-operator:latest
 podman pull $HYPERSHIFT_IMAGE
-alias hypershift="podman run --net host --rm --entrypoint /usr/bin/hypershift -e KUBECONFIG=/working_dir/dev-scripts/ocp/hub/auth/kubeconfig -v $HOME/.ssh:/root/.ssh -v $(pwd):/working_dir $HYPERSHIFT_IMAGE"
+alias hypershift="podman run --net host --rm --entrypoint /usr/bin/hypershift -e KUBECONFIG=/working_dir/dev-scripts/ocp/dev/auth/kubeconfig -v $HOME/.ssh:/root/.ssh -v $(pwd):/working_dir $HYPERSHIFT_IMAGE"
 hypershift install --hypershift-image $HYPERSHIFT_IMAGE
 
 # Create namespace
@@ -66,7 +66,7 @@ oc get po -wA|grep -vE 'Completed|Running'
 oc get infraenv $INFRAENV -n $NAMESPACE -o json| jq -r .status.isoDownloadURL| xargs curl -kI
 
 # Create BareMetalHosts
-cat  dev-scripts/ocp/hub/saved-assets/assisted-installer-manifests/06-extra-host-manifests.yaml | sed "s/assisted-installer/$NAMESPACE/g; s/myinfraenv/$INFRAENV/g" | oc apply -f -
+cat  dev-scripts/ocp/dev/saved-assets/assisted-installer-manifests/06-extra-host-manifests.yaml | sed "s/assisted-installer/$NAMESPACE/g; s/myinfraenv/$INFRAENV/g" | oc apply -f -
 
 # And wait until the baremetalhosts boot and register their respective agents
 oc get -n $NAMESPACE agent -w
@@ -78,7 +78,7 @@ hypershift create cluster agent --name $CLUSTERNAME --base-domain $BASEDOMAIN --
 oc get po -n $NAMESPACE-$CLUSTERNAME -w
 
 # Generate full kubeconfig
-KUBECONFIG=dev-scripts/ocp/hub/auth/kubeconfig:<(hypershift create kubeconfig) kubectl config view --flatten > ~/.kube/config
+KUBECONFIG=dev-scripts/ocp/dev/auth/kubeconfig:<(hypershift create kubeconfig) kubectl config view --flatten > ~/.kube/config
 oc config get-contexts
 ```
 
@@ -115,8 +115,8 @@ We can use predefined labels, or set our own labels
 
 ```
 # Label agents
-oc label -n $NAMESPACE agent --selector agent-install.openshift.io/bmh=hub-extraworker-2 tier=custom
-oc label -n $NAMESPACE agent --selector agent-install.openshift.io/bmh=hub-extraworker-3 tier=custom
+oc label -n $NAMESPACE agent --selector agent-install.openshift.io/bmh=dev-extraworker-2 tier=custom
+oc label -n $NAMESPACE agent --selector agent-install.openshift.io/bmh=dev-extraworker-3 tier=custom
 # Patch nodepool
 oc patch -n $NAMESPACE nodepool $CLUSTERNAME  --type merge -p '{"spec":{"platform":{"agent":{"agentLabelSelector":{"matchLabels":{"tier":"custom"}}}}}}'
 # Now we can see how existing nodes are migrated
