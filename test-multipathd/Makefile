@@ -1,7 +1,7 @@
 include ../Makefile.globals
 
-NAME=javipolo-mpath
-SNO_NAME=mpath-sno
+CLUSTER_NAME=javipolo-mpath
+SNO-NAME=mpath-sno
 
 MPATH_A_NET=mpa
 MPATH_A_ADDRESS=192.168.130.1
@@ -10,11 +10,11 @@ MPATH_B_ADDRESS=192.168.131.1
 
 cluster: ## Create cluster
 	mkdir -p $(CLUSTER_DIR)
-	jq '. + { name: "$(NAME)" }' templates/cluster.json | $(apicurl) -XPOST -d @- $(API_URL)/v2/clusters | tee $(CLUSTER_DIR)/cluster.json
+	jq '. + { name: "$(CLUSTER_NAME)" }' templates/cluster.json | $(apicurl) -XPOST -d @- $(API_URL)/v2/clusters | tee $(CLUSTER_DIR)/cluster.json
 
 get-cluster: ## Get cluster.json from API
 	mkdir -p $(CLUSTER_DIR)
-	$(apicurl) $(API_URL)/v2/clusters | jq '.[] | select(.name=="$(NAME)")' > $(CLUSTER_DIR)/cluster.json
+	$(apicurl) $(API_URL)/v2/clusters | jq '.[] | select(.name=="$(CLUSTER_NAME)")' > $(CLUSTER_DIR)/cluster.json
 
 ignition.json: ## Generate ignition.json from files
 	jq -n --arg MULTIPATHCONF $(shell base64 -w0 templates/files/multipath.conf) --arg INITIATOR $(shell base64 -w0 templates/files/initiatorname.iscsi) --arg SETUPISCSI $(shell base64 -w0 templates/files/setup-iscsi.sh) $(file < templates/ignition.tpl)
@@ -27,11 +27,11 @@ iso: ## Create ISO
 	jq -n '{ ssh_authorized_key: "$(file < $(SSH_KEY))", ignition_config_override: $(shell jq -c . templates/ignition.json | jq -R .)}' | $(apicurl) -XPATCH -d @- $(API_URL)/v2/infra-envs/$(shell $(apicurl) $(API_URL)/v2/infra-envs | jq -r '.[] | select(.cluster_id=="$(CLUSTER_ID)") | .id') | tee $(CLUSTER_DIR)/iso.json
 
 get-iso: iso ## Download ISO
-	jq -r .download_url $(CLUSTER_DIR)/iso.json | xargs -I% wget -O "$(ISO_DIR)/$(NAME).iso" "%"
+	jq -r .download_url $(CLUSTER_DIR)/iso.json | xargs -I% wget -O "$(ISO_DIR)/$(CLUSTER_NAME).iso" "%"
 
 patch-host: INFRA_ENV_ID=$(shell $(apicurl) $(API_URL)/v2/infra-envs | jq -r '.[] | select(.cluster_id=="$(CLUSTER_ID)") | .id')
-patch-host: HOST_ID=$(shell $(apicurl) $(API_URL)/v2/infra-envs/$(INFRA_ENV_ID)/hosts | jq -r '.[] | select(.requested_hostname=="$(SNO_NAME)") | .id')
-patch-host: ## Patch $(SNO_NAME) with ignition config
+patch-host: HOST_ID=$(shell $(apicurl) $(API_URL)/v2/infra-envs/$(INFRA_ENV_ID)/hosts | jq -r '.[] | select(.requested_hostname=="$(SNO-NAME)") | .id')
+patch-host: ## Patch $(SNO-NAME) with ignition config
 	jq -n '{"host-ignition-params": $(shell jq -c . templates/ignition.json | jq -R .)}' | $(apicurl) -XPATCH -d @- $(API_URL)/v2/infra-envs/$(INFRA_ENV_ID)/hosts/$(HOST_ID)/ignition | tee $(CLUSTER_DIR)/patch-host.json
 
 network: ## Define network connections

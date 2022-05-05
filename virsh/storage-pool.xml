@@ -1,7 +1,7 @@
 <pool type="dir">
-  <name>default</name>
+  <name>ocp</name>
   <target>
-    <path>/home/images</path>
+    <path>/home/libvirt-ocp</path>
     <permissions>
       <mode>0711</mode>
       <owner>0</owner>
