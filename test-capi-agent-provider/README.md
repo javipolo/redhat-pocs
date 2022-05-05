@@ -71,7 +71,7 @@ cat  dev-scripts/ocp/dev/saved-assets/assisted-installer-manifests/06-extra-host
 # And wait until the baremetalhosts boot and register their respective agents
 oc get -n $NAMESPACE agent -w
 
-# Now we can create our openshift cluster
+# Create hypershift cluster
 hypershift create cluster agent --name $CLUSTERNAME --base-domain $BASEDOMAIN --pull-secret /working_dir/pull_secret.json  --ssh-key $SSHKEY --agent-namespace $NAMESPACE --namespace $NAMESPACE
 
 # Wait for everything to be OK
