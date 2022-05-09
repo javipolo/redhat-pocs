@@ -15,7 +15,7 @@ SPOKE_NAME=cluster1
 SPOKE_ISO_PATH=$(ISO_DIR)/ztp-$(SPOKE_NAME).iso
 KCLI_TEMPLATE_SPOKE=-P iso="$(SPOKE_ISO_PATH)" -P memory=16384 -P numcpus=8 -P disks=['$(KCLI_TEMPLATE_DISK)']
 
-clean: clean-cluster clean-vms clean-ztp clean-isos clean-ztp-net ## Delete everything (cluster, vms, ztp-vms, isos and ztp extra network)
+clean: clean-cluster clean-vms clean-ztp clean-isos ## Delete everything (cluster, vms, ztp-vms, isos, ..)
 
 clean-isos: ## Delete iso files
 	-rm -f $(CLUSTER_ISO_PATH)
@@ -31,12 +31,12 @@ vms: ## Provision cluster nodes
 	@$(kcli) create vm $(KCLI_TEMPLATE_CLUSTER) -P nets=['{"name": "default", "mac": "de:ad:be:ef:de:06"}'] $(CLUSTER_NAME)-6
 
 clean-vms: ## Delete cluster nodes
-	-$(kcli) delete vm -y $(CLUSTER_NAME)-1
-	-$(kcli) delete vm -y $(CLUSTER_NAME)-2
-	-$(kcli) delete vm -y $(CLUSTER_NAME)-3
-	-$(kcli) delete vm -y $(CLUSTER_NAME)-4
-	-$(kcli) delete vm -y $(CLUSTER_NAME)-5
-	-$(kcli) delete vm -y $(CLUSTER_NAME)-6
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-1
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-2
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-3
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-4
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-5
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-6
 
 ztp-vms: ## Provision ztp nodes
 	@$(kcli) create vm $(KCLI_TEMPLATE_SPOKE) -P nets=['{"name": "default", "mac": "de:ad:be:ef:de:11"}'] $(SPOKE_NAME)-1
@@ -49,12 +49,12 @@ ztp-day2: ## Provision ztp day2 node in different network
 	@$(kcli) create vm $(KCLI_TEMPLATE_SPOKE) -P nets=['{"name": "default", "mac": "de:ad:be:ef:de:16"}'] $(SPOKE_NAME)-6
 
 clean-ztp: ## Delete ZTP cluster nodes
-	-$(kcli) delete vm -y $(SPOKE_NAME)-1
-	-$(kcli) delete vm -y $(SPOKE_NAME)-2
-	-$(kcli) delete vm -y $(SPOKE_NAME)-3
-	-$(kcli) delete vm -y $(SPOKE_NAME)-4
-	-$(kcli) delete vm -y $(SPOKE_NAME)-5
-	-$(kcli) delete vm -y $(SPOKE_NAME)-6
+	-@$(kcli) delete vm -y $(SPOKE_NAME)-1
+	-@$(kcli) delete vm -y $(SPOKE_NAME)-2
+	-@$(kcli) delete vm -y $(SPOKE_NAME)-3
+	-@$(kcli) delete vm -y $(SPOKE_NAME)-4
+	-@$(kcli) delete vm -y $(SPOKE_NAME)-5
+	-@$(kcli) delete vm -y $(SPOKE_NAME)-6
 
 simple: ## Create only one node
 	$(kcli) create vm $(KCLI_TEMPLATE_CLUSTER) -P nets=['{"name": "default", "mac": "de:ad:be:ef:de:ff"}'] simple
