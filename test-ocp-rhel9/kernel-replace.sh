@@ -2,20 +2,17 @@
 
 set -e
 
-rpm_url=http://download.eng.bos.redhat.com/rhel-9/nightly/RHEL-9/latest-RHEL-9/compose/BaseOS/x86_64/os/Packages
 arch=x86_64
-version=$(curl -sL $rpm_url | awk -F\" '/kernel-5/{print $6}'| sed -E "s/kernel-(.+).${arch}.rpm\$/\1/")
+rpm_url=http://download.eng.bos.redhat.com/rhel-9/nightly/RHEL-9/latest-RHEL-9/compose/BaseOS/$arch/os/Packages
+version=$(curl -sL $rpm_url | awk -F\" '/kernel-core-/{print $6}'| sed -E "s/kernel-core-(.+).${arch}.rpm\$/\1/")
 packages='kernel kernel-core kernel-modules kernel-modules-extra'
 
-namespace=kernel-replace
-
-oc create namespace $namespace
-# Allow pods to create privileged containers in namespace
-oc adm policy add-scc-to-user privileged -z $namespace
 # Disable warnings about creating privileged containers in namespace
-kubectl label --overwrite namespace $namespace pod-security.kubernetes.io/warn=privileged
+oc label --overwrite namespace default pod-security.kubernetes.io/warn=privileged
+# Allow pods to create privileged containers
+oc adm policy add-scc-to-user privileged -z default
 
-cat <<EOF | oc apply -n $namespace -f -
+cat <<EOF | oc apply -f -
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -66,7 +63,7 @@ EOF
 
 cm_id=$(oc get configmap kernel-replace -o jsonpath={.metadata.resourceVersion})
 
-cat <<EOF | oc apply -n $namespace -f -
+cat <<EOF | oc apply -f -
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -102,6 +99,8 @@ spec:
       hostNetwork: true
       restartPolicy: Always
       terminationGracePeriodSeconds: 10
+      tolerations:
+        - operator: Exists
       volumes:
       - configMap:
           name: kernel-replace
