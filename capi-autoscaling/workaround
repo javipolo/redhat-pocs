@@ -1,0 +1,30 @@
+#!/bin/bash
+
+namespace=mynamespace
+clustername=mycluster
+context=hyper
+
+nodes=${*:-$(oc get agent -n $namespace -o json | jq -r '.items[] | select(.status.debugInfo.state=="unbinding-pending-user-action") | .metadata.labels."agent-install.openshift.io/bmh"')}
+
+do_workaround(){
+    local libvirt_node=$1
+    local ironic_node=${namespace}~${libvirt_node}
+    local node_hostname=$(echo $libvirt_node|cut -d - -f 2-)
+    local maintenance=$(baremetal node show $ironic_node -f value -c maintenance | tail -n1)
+    if [ "$maintenance" == "True" ]; then
+      baremetal node maintenance unset $ironic_node &>/dev/null
+      baremetal node power on $ironic_node &>/dev/null
+      until ssh core@$node_hostname efibootmgr 2>/dev/null | grep -q '^Boot0001'; do
+        sleep 10
+      done
+    fi
+    oc get node --context $context $node_hostname &>/dev/null && oc delete node --context $context $node_hostname &>/dev/null
+    ssh core@$node_hostname 2>/dev/null 'sudo efibootmgr -qn1 && sudo reboot'
+    echo "$node_hostname unlocked, wait for agent state to be known-unbound"
+}
+
+cd dev-scripts
+for node in $nodes; do
+    do_workaround $node &
+done
+wait
