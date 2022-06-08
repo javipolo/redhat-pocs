@@ -11,6 +11,9 @@ do_workaround(){
     local ironic_node=${namespace}~${libvirt_node}
     local node_hostname=$(echo $libvirt_node|cut -d - -f 2-)
     local maintenance=$(baremetal node show $ironic_node -f value -c maintenance | tail -n1)
+
+    # If node is in maintenance mode, it means we hit this bug
+    # https://bugzilla.redhat.com/show_bug.cgi?id=2065727
     if [ "$maintenance" == "True" ]; then
       baremetal node maintenance unset $ironic_node &>/dev/null
       baremetal node power on $ironic_node &>/dev/null
@@ -18,8 +21,13 @@ do_workaround(){
         sleep 10
       done
     fi
+
+    # We might need to delete the node from the cluster, this happens if
+    # node was rebooted, but it started up from disk instead of CD
     oc get node --context $context $node_hostname &>/dev/null && oc delete node --context $context $node_hostname &>/dev/null
+    # Since we cannot control VM next boot with libvirt, we have to force it to be CDROM
     ssh core@$node_hostname 2>/dev/null 'sudo efibootmgr -qn1 && sudo reboot'
+
     echo "$node_hostname unlocked, wait for agent state to be known-unbound"
 }
 
