@@ -6,25 +6,18 @@ mycluster: ## Create cluster
 	mkdir -p $(CLUSTER_DIR)
 	jq '. + { name: "$(CLUSTER_NAME)" }' templates/cluster.json | jq '. + {pull_secret: $(shell jq -cR . $(PULL_SECRET))}' | jq '. + {ssh_public_key: "$(file < $(SSH_KEY))"}' | $(apicurl) -XPOST -d @- $(API_URL)/v2/clusters | tee $(CLUSTER_DIR)/cluster.json
 
-iso: ## Create and get ISO
+create-iso: ## Create and get ISO
 	mkdir -p $(ISO_DIR)
 	jq ' . | {name: .name, cluster_id: .id, openshift_version: .openshift_version, ssh_authorized_key: .ssh_public_key, image_type: "full-iso" }' $(CLUSTER_DIR)/cluster.json | jq '. + {pull_secret: $(shell jq -cR . $(PULL_SECRET))}'| $(apicurl) -XPOST -d @- $(API_URL)/v2/infra-envs -d @- | tee $(CLUSTER_DIR)/iso.json
 
-get-iso: ## Download iso file
+iso: create-iso ## Download iso file
 	wget -O "$(ISO_DIR)/$(CLUSTER_NAME).iso" "$(shell jq -r .download_url $(CLUSTER_DIR)/iso.json)"
 
-bonding-iso: ## Create and get bonding ISO
+create-bonding-iso: ## Create bonding ISO
 	mkdir -p $(ISO_DIR)
 	jq '. | {name: .name, cluster_id: .id, openshift_version: .openshift_version, ssh_authorized_key: .ssh_public_key, image_type: "full-iso" }' $(CLUSTER_DIR)/cluster.json | jq '. + $(shell cat templates/bonding.json)' | jq '. + {pull_secret: $(shell jq -cR . $(PULL_SECRET))}' | $(apicurl) -XPOST -d @- $(API_URL)/v2/infra-envs -d @- | tee $(CLUSTER_DIR)/iso.json
-	wget -O "$(ISO_DIR)/$(CLUSTER_NAME).iso" "$(shell jq -r .download_url $(CLUSTER_DIR)/iso.json)"
 
-bonding-vlan-json: ## Generate bonding-vlan.json from templates
-	mkdir -p $(ISO_DIR)
-	echo jq -n --arg NETWORK "$(file < templates/bonding-vlan.yaml)" "$(file < templates/bonding-vlan.template)"
-
-bonding-vlan-iso: ## Create and get bonding ISO
-	mkdir -p $(ISO_DIR)
-	jq '. | {name: .name, cluster_id: .id, openshift_version: .openshift_version, ssh_authorized_key: .ssh_public_key, image_type: "full-iso" }' $(CLUSTER_DIR)/cluster.json | jq '. + $(shell cat templates/bonding-vlan.json)' | jq '. + {pull_secret: $(shell jq -cR . $(PULL_SECRET))}' | $(apicurl) -XPOST -d @- $(API_URL)/v2/infra-envs -d @- | tee $(CLUSTER_DIR)/iso.json
+bonding-iso: create-bonding-iso ## Download bonding ISO
 	wget -O "$(ISO_DIR)/$(CLUSTER_NAME).iso" "$(shell jq -r .download_url $(CLUSTER_DIR)/iso.json)"
 
 vms: ## Provision nodes
