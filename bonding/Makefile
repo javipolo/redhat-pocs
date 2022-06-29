@@ -2,7 +2,7 @@ include ../Makefile.globals
 
 CLUSTER_NAME=javipolo-bond-01
 
-cluster: ## Create cluster
+mycluster: ## Create cluster
 	mkdir -p $(CLUSTER_DIR)
 	jq '. + { name: "$(CLUSTER_NAME)" }' templates/cluster.json | jq '. + {pull_secret: $(shell jq -cR . $(PULL_SECRET))}' | jq '. + {ssh_public_key: "$(file < $(SSH_KEY))"}' | $(apicurl) -XPOST -d @- $(API_URL)/v2/clusters | tee $(CLUSTER_DIR)/cluster.json
 
