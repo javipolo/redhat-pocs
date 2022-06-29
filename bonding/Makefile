@@ -9,6 +9,8 @@ mycluster: ## Create cluster
 iso: ## Create and get ISO
 	mkdir -p $(ISO_DIR)
 	jq ' . | {name: .name, cluster_id: .id, openshift_version: .openshift_version, ssh_authorized_key: .ssh_public_key, image_type: "full-iso" }' $(CLUSTER_DIR)/cluster.json | jq '. + {pull_secret: $(shell jq -cR . $(PULL_SECRET))}'| $(apicurl) -XPOST -d @- $(API_URL)/v2/infra-envs -d @- | tee $(CLUSTER_DIR)/iso.json
+
+get-iso: ## Download iso file
 	wget -O "$(ISO_DIR)/$(CLUSTER_NAME).iso" "$(shell jq -r .download_url $(CLUSTER_DIR)/iso.json)"
 
 bonding-iso: ## Create and get bonding ISO
