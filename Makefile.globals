@@ -22,18 +22,21 @@ KCLI_TEMPLATE_CLUSTER=-P iso="$(CLUSTER_ISO_PATH)" -P memory=16384 -P numcpus=8 
 
 # Aicli defaults
 CLUSTER_OCP_VERSION=4.10
-CLUSTER_PULL_SECRET=local/pull-secret.json
+CLUSTER_HOST_NUM=5
+CLUSTER_PULL_SECRET=local/pull_secret.json
 CLUSTER_NETWORK_TYPE=OpenShiftSDN
 CLUSTER_BASEDOMAIN=redhat.com
 CLUSTER_SSH_PUBLIC_KEY=$(shell cat $(HOME)/.ssh/id_rsa.pub)
 
 CLUSTER_DIR=clusters/$(NAME)
 CLUSTER_ID=$(shell test -e $(CLUSTER_DIR)/cluster.json && jq -r .id $(CLUSTER_DIR)/cluster.json)
-PULL_SECRET=$(git_root)/pull-secret.json
+PULL_SECRET=$(git_root)/pull_secret.json
 
 # Aliased commands
-kcli=podman run --net host -it --rm --security-opt label=disable -v $(ISO_DIR):$(ISO_DIR) -v $(IMG_DIR):$(IMG_DIR) -v $(HOME)/.ssh:/root/.ssh -v $(HOME)/.kcli:/root/.kcli -v /var/lib/libvirt/images:/var/lib/libvirt/images -v /var/run/libvirt:/var/run/libvirt -v $(PWD):/workdir -v /var/tmp:/ignitiondir quay.io/karmab/kcli
-aicli=podman run -it --rm -e AI_OFFLINETOKEN=$(AI_OFFLINETOKEN) -v $(git_root):/local docker.io/javipolo/aicli:latest -U $(ASSISTED_SERVICE)
+KCLI_IMAGE=quay.io/karmab/kcli
+AICLI_IMAGE=quay.io/karmab/aicli
+kcli=podman run --net host -i --rm --security-opt label=disable -v $(ISO_DIR):$(ISO_DIR) -v $(IMG_DIR):$(IMG_DIR) -v $(HOME)/.ssh:/root/.ssh -v $(HOME)/.kcli:/root/.kcli -v /var/lib/libvirt/images:/var/lib/libvirt/images -v /var/run/libvirt:/var/run/libvirt -v $(PWD):/workdir -v /var/tmp:/ignitiondir $(KCLI_IMAGE)
+aicli=podman run -i --rm -e AI_OFFLINETOKEN=$(AI_OFFLINETOKEN) -v $(SSH_KEY):$(SSH_KEY) -v $(git_root):/local $(AICLI_IMAGE) -U $(ASSISTED_SERVICE)
 apicurl=$(git_root)/bin/apicurl
 
 default: help
@@ -49,6 +52,7 @@ cluster: cluster-create cluster-download-iso vms wait-hosts cluster-start wait-c
 cluster-create:
 	@$(aicli) create cluster $(CLUSTER_NAME) \
 	  -P openshift_version=$(CLUSTER_OCP_VERSION) \
+	  -P ocp_release_image=$(CLUSTER_OCP_RELEASE_NONEXISTEN) \
 	  -P pull_secret=$(CLUSTER_PULL_SECRET) \
 	  -P base_dns_domain=$(CLUSTER_BASEDOMAIN) \
 	  -P api_vip=$(CLUSTER_API_VIP) \
@@ -61,7 +65,6 @@ cluster-download-iso:
 	@mv $(git_root)/$(CLUSTER_NAME).iso $(CLUSTER_ISO_PATH)
 
 wait-hosts:
-	#@$(aicli) wait hosts -n $(CLUSTER_HOST_NUM) --filter known $(CLUSTER_NAME)
 	@until $(aicli) list hosts | grep ' $(CLUSTER_NAME)_infra-env ' | grep ' known ' | wc -l | grep -qx $(CLUSTER_HOST_NUM); do echo "Waiting for $(CLUSTER_HOST_NUM) hosts to be discovered for cluster $(CLUSTER_NAME)"; sleep 5; done
 	@echo "Hosts discovered"
 

@@ -20,6 +20,16 @@ create-bonding-iso: ## Create bonding ISO
 bonding-iso: create-bonding-iso ## Download bonding ISO
 	wget -O "$(ISO_DIR)/$(CLUSTER_NAME).iso" "$(shell jq -r .download_url $(CLUSTER_DIR)/iso.json)"
 
+tmp: ## Create bonding ISO
+	@jq '. | {name: .name, cluster_id: .id, openshift_version: .openshift_version, ssh_authorized_key: .ssh_public_key, image_type: "full-iso" }' $(CLUSTER_DIR)/cluster.json | jq '. + $(shell cat templates/bonding.json)' | jq '. + {pull_secret: $(shell jq -cR . $(PULL_SECRET))}' | jq '. + {"ignition_config_override": "{\"ignition\":{\"version\":\"3.1.0\"},\"passwd\":{\"users\":[{\"name\":\"root\",\"passwordHash\":\"$6$y.Iqn.taWUNFw6GS$g/zyQohRRhwbpMnJfO/vH62ehdkIUvUn5jd06yc4Y7CA7j79CBULj3jULtlwDycD1Tag.SkXgrj6Ogvm61/KC.\"}]}}"}'
+
+create-tmp-iso: ## Create bonding ISO
+	mkdir -p $(ISO_DIR)
+	jq '. | {name: .name, cluster_id: .id, openshift_version: .openshift_version, ssh_authorized_key: .ssh_public_key, image_type: "full-iso" }' $(CLUSTER_DIR)/cluster.json | jq '. + $(shell cat templates/bonding.json)' | jq '. + {pull_secret: $(shell jq -cR . $(PULL_SECRET))}' | jq '. + {"ignition_config_override": "{\"ignition\":{\"version\":\"3.2.0\"},\"passwd\":{\"users\":[{\"name\":\"root\",\"passwordHash\":\"\$6\$y.Iqn.taWUNFw6GS\$g/zyQohRRhwbpMnJfO/vH62ehdkIUvUn5jd06yc4Y7CA7j79CBULj3jULtlwDycD1Tag.SkXgrj6Ogvm61/KC.\"}]}}"}'| $(apicurl) -XPOST -d @- $(API_URL)/v2/infra-envs -d @- | tee $(CLUSTER_DIR)/iso.json
+
+tmp-iso: create-tmp-iso ## Download bonding ISO
+	wget -O "$(ISO_DIR)/$(CLUSTER_NAME).iso" "$(shell jq -r .download_url $(CLUSTER_DIR)/iso.json)"
+
 vms: ## Provision nodes
 	$(kcli) create vm -P iso="$(ISO_DIR)/$(CLUSTER_NAME).iso" -P nets=['{"name": "default", "mac": "de:ad:de:ad:00:00"},{"name": "default", "mac": "de:ad:de:ad:00:01"}'] -P memory=16384 -P numcpus=16 -P disks=['{"size": 120, "pool": "default"}'] $(CLUSTER_NAME)-master-01
 	$(kcli) create vm -P iso="$(ISO_DIR)/$(CLUSTER_NAME).iso" -P nets=['{"name": "default", "mac": "de:ad:de:ad:00:02"},{"name": "default", "mac": "de:ad:de:ad:00:03"}'] -P memory=16384 -P numcpus=16 -P disks=['{"size": 120, "pool": "default"}'] $(CLUSTER_NAME)-master-02

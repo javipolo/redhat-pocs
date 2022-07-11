@@ -10,7 +10,7 @@ export CLUSTER_NAME="dev"
 export BASE_DOMAIN="redhat.com"
 
 
-export OPENSHIFT_VERSION=4.9.17
+export OPENSHIFT_VERSION=4.10.13
 export OPENSHIFT_RELEASE_TYPE=ga
 export IP_STACK=v4
 export BMC_DRIVER=redfish-virtualmedia

@@ -11,7 +11,7 @@ oc config get-contexts
 
 ```
 oc create namespace open-cluster-management
-oc create secret generic pull-secret -n open-cluster-management --from-file=.dockerconfigjson=../pull-secret.json --type=kubernetes.io/dockerconfigjson
+oc create secret generic pull-secret -n open-cluster-management --from-file=.dockerconfigjson=../pull_secret.json --type=kubernetes.io/dockerconfigjson
 
 cat << EOF | oc apply -f -
 ---

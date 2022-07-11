@@ -26,6 +26,9 @@ iso: ## Create ISO
 	mkdir -p $(ISO_DIR)
 	jq -n '{ ssh_authorized_key: "$(file < $(SSH_KEY))", ignition_config_override: $(shell jq -c . templates/ignition.json | jq -R .)}' | $(apicurl) -XPATCH -d @- $(API_URL)/v2/infra-envs/$(shell $(apicurl) $(API_URL)/v2/infra-envs | jq -r '.[] | select(.cluster_id=="$(CLUSTER_ID)") | .id') | tee $(CLUSTER_DIR)/iso.json
 
+patch: ## Create ISO
+	jq -n '{ ssh_authorized_key: "$(file < $(SSH_KEY))", ignition_config_override: $(shell jq -c . templates/ignition.json | jq -R .)}'
+
 get-iso: iso ## Download ISO
 	jq -r .download_url $(CLUSTER_DIR)/iso.json | xargs -I% wget -O "$(ISO_DIR)/$(CLUSTER_NAME).iso" "%"
 

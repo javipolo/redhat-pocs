@@ -1,4 +1,5 @@
 config_credentials.sh
+pull_secret.json
 pull-secret.json
 */clusters
 iso2pxe

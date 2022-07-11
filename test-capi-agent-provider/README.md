@@ -45,7 +45,7 @@ type: kubernetes.io/dockerconfigjson
 metadata:
   name: my-pull-secret
 data:
-  .dockerconfigjson: $(cat ~/dev-scripts/pull_secret.json | base64 -w0)
+  .dockerconfigjson: $(cat pull_secret.json | base64 -w0)
 EOF
 
 # Create infraenv
