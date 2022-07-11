@@ -1,0 +1,16 @@
+apiVersion: v1
+baseDomain: redhat.com
+compute:
+- name: worker
+  replicas: 0
+  hyperthreading: Enabled
+controlPlane:
+  name: master
+  replicas: 3
+  hyperthreading: Enabled
+metadata:
+  name: multiarch
+platform:
+  none: {}
+pullSecret: 'HERE_GOES_THE_PULL_SECRET'
+sshKey: 'HERE_GOES_THE_PUBLIC_SSH_KEY'
