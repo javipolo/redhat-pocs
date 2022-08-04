@@ -1,0 +1,200 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: assisted-installer-local-auth-key
+  namespace: $REPLACE_NAMESPACE
+type: Opaque
+data:
+  ec-private-key.pem: LS0tLS1CRUdJTiBFQyBQUklWQVRFIEtFWS0tLS0tCk1IY0NBUUVFSUNzRG5UR3hiaDJsQ0lIRWxRWWhHOHh6MndNckcrRzQzVjJLeWROb1h6T2lvQW9HQ0NxR1NNNDkKQXdFSG9VUURRZ0FFS3FzRlVWRktxZlhWdmJzeFhoRzlxSENXU1BUQm43S3NnN3lJUDdPblVyeitxL25IaFphYgpmb0VHNzJPQzZ2czYyQy92UjllaEVRWkpweGN1ZDFZVnNnPT0KLS0tLS1FTkQgRUMgUFJJVkFURSBLRVktLS0tLQo=
+  ec-public-key.pem: LS0tLS1CRUdJTiBFQyBQVUJMSUMgS0VZLS0tLS0KTUZrd0V3WUhLb1pJemowQ0FRWUlLb1pJemowREFRY0RRZ0FFS3FzRlVWRktxZlhWdmJzeFhoRzlxSENXU1BUQgpuN0tzZzd5SVA3T25VcnorcS9uSGhaYWJmb0VHNzJPQzZ2czYyQy92UjllaEVRWkpweGN1ZDFZVnNnPT0KLS0tLS1FTkQgRUMgUFVCTElDIEtFWS0tLS0tCg==
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: default-ingress-cert
+  namespace: $REPLACE_NAMESPACE
+data:
+  ca-bundle.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIDYTCCAkmgAwIBAgIIKDA2oz5oIXUwDQYJKoZIhvcNAQELBQAwJjEkMCIGA1UE
+    AwwbaW5ncmVzcy1vcGVyYXRvckAxNjU4MTQwMjY1MB4XDTIyMDcxODEwMzEwNVoX
+    DTI0MDcxNzEwMzEwNlowIDEeMBwGA1UEAwwVKi5hcHBzLmRldi5yZWRoYXQuY29t
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwsGLvfjyAkZe9TsDTG8z
+    W0O448F0xiN4jq0A7iF0ErxxBSyTnDryD9tl8qIKg8IyK0hwvX5gr1RXLopNedXx
+    ixvRRY75P/5ni5QvDz4tCwxbuz3CiAT3H7cR/girQUk2I648Chu0aF0ZDkz6SP74
+    6D0eU0vDxU5rA5ACWefrPWxYdaKgpJX9S53BNWWH4CkrW/sMi3L647dwaF5llDHn
+    rVz68ebJEEARwLwewQi351wwj7884x0psk5GSgy+foEsI1fFE0eUPkb9TdVCZWtb
+    2m6c7HjmutQPCBw8CbgLx8gjVNOPdo0hy1dqiNo07DFfwW6tN7wKIHFY2YL5kERA
+    KwIDAQABo4GYMIGVMA4GA1UdDwEB/wQEAwIFoDATBgNVHSUEDDAKBggrBgEFBQcD
+    ATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBRV/3EETo1mdKFXlDcKVjsogst93TAf
+    BgNVHSMEGDAWgBTcbZxFhFT87qD8XYEGmKQAPYwxxzAgBgNVHREEGTAXghUqLmFw
+    cHMuZGV2LnJlZGhhdC5jb20wDQYJKoZIhvcNAQELBQADggEBAKkpMCC4TfAWmEaU
+    QUfXT2EjxprSQXhjpXtU5PqeJ4aTNVoWN07WzMp5a06li2czVA1gJEve8yU2rpOQ
+    VrBkDzAXuw/y3HXesKwzD5yl8W4iTqgVKH3ubkeOZMn5Pdjbkv2kh7GCGgGOA4MW
+    adCmtSV4RdCiNangDjP8D/Qynjqh3Wqrs77xL/D9G0SrGFm3O+4ykcz4TEuWqdsO
+    y2L+Rh863nwSKe2anoXWE+TRzt4eQS857D/x4vhCx6JYGLddYiA2W+Ihzg6achEy
+    j+vIqZD9GVxRkVpIYDQE/5fPjeICWI1Z7abEMZ1yf0Cr+wQSmYiKP9nCCrCcl1au
+    XibGWEI=
+    -----END CERTIFICATE-----
+    -----BEGIN CERTIFICATE-----
+    MIIDDDCCAfSgAwIBAgIBATANBgkqhkiG9w0BAQsFADAmMSQwIgYDVQQDDBtpbmdy
+    ZXNzLW9wZXJhdG9yQDE2NTgxNDAyNjUwHhcNMjIwNzE4MTAzMTA1WhcNMjQwNzE3
+    MTAzMTA2WjAmMSQwIgYDVQQDDBtpbmdyZXNzLW9wZXJhdG9yQDE2NTgxNDAyNjUw
+    ggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDDvgL8J3Y329mgVuEUAsjG
+    AJnSwp52ygg1kInx7buQGlTn/GBefaspe7LVP05sgPq6EkXrrQ7JL1ZoDiUKsTXv
+    Dx/KWOTIZ6+2asfypTUHbJy54jSoi7v0xDxB1OUpmf7TNYN3UkEltV53p1gxAh2R
+    9RDY9b7gtVLv4FjAgHJAqUwMOCY/0zYPp1yFJuUxwyDT4m7Z791JYSnvzm59Of6m
+    5OvlKLOVKo2aVhIo5ipxYWDBeK8eJIaGhO+JliEytAD8aKhcvhKHyQ0h5IWSgQYL
+    llPcRIfBBycKohL5worX5UGODbKaulFQBJsm/GgFDW/2bgJtSwBX3BEX+uuSML+j
+    AgMBAAGjRTBDMA4GA1UdDwEB/wQEAwICpDASBgNVHRMBAf8ECDAGAQH/AgEAMB0G
+    A1UdDgQWBBTcbZxFhFT87qD8XYEGmKQAPYwxxzANBgkqhkiG9w0BAQsFAAOCAQEA
+    U92l/j4HfrKoD/HRU9tAYmANCQEpkzLMl0P5EEtRPGZG6tA7cXNALwOGrPbW8/dp
+    yUSZJ3UWvcLRiUVYzqEeK1nBuG/dOHmTlDwxPlDvyMUasV6uTqmDkRfvbE8Oyhm0
+    ZX6xEGCV1HgLgVcwuDIJGoQVsk/HYXQ30a+BlCO5EJO4Mh6YqnLSRnJgb9ocyp8U
+    +ouL6EFHQg45C/qVjtNaBKBNX/nQA0LKe6jeck40cv8u/Er9gUYvijEDzg5kk7im
+    3fYmPmYouRKSMFEqplS9nqY9ohbeOO51J7Er39CynJVeGuX74DQtVvQjfhDpWdff
+    NTpj8akntzkgih+riD5F0A==
+    -----END CERTIFICATE-----
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: assisted-service
+  name: assisted-service
+  namespace: $REPLACE_NAMESPACE
+spec:
+  ports:
+    - name: assisted-service
+      port: 8090
+      protocol: TCP
+      targetPort: 8090
+  selector:
+    app: assisted-service
+  type: LoadBalancer
+status:
+  loadBalancer: {}
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: assisted-service
+  namespace: $REPLACE_NAMESPACE
+spec:
+  host: assisted-service-$REPLACE_NAMESPACE.apps.dev.redhat.com
+  port:
+    targetPort: assisted-service
+  to:
+    kind: Service
+    name: assisted-service
+
+---
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: assisted-service
+  namespace: $REPLACE_NAMESPACE
+spec:
+  selector:
+    matchLabels:
+      app: assisted-service
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: assisted-service
+    spec:
+      containers:
+        - name: assisted-service
+          resources:
+            limits:
+              cpu: 500m
+              memory: 2000Mi
+            requests:
+              cpu: 300m
+              memory: 400Mi
+          image: quay.io/edge-infrastructure/assisted-service:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8090
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8090
+            initialDelaySeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8090
+          envFrom:
+            - configMapRef:
+                name: assisted-service-config
+          env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: assisted-installer-rds
+                  key: db.host
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: assisted-installer-rds
+                  key: db.name
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: assisted-installer-rds
+                  key: db.password
+            - name: DB_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: assisted-installer-rds
+                  key: db.port
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: assisted-installer-rds
+                  key: db.user
+            - name: EC_PUBLIC_KEY_PEM
+              valueFrom:
+                secretKeyRef:
+                  key: ec-public-key.pem
+                  name: assisted-installer-local-auth-key
+            - name: EC_PRIVATE_KEY_PEM
+              valueFrom:
+                secretKeyRef:
+                  key: ec-private-key.pem
+                  name: assisted-installer-local-auth-key
+            - name: LOG_LEVEL
+              value: "debug"
+            - name: LOG_FORMAT
+              value: "text"
+            - name: INSTALL_RH_CA
+              value: "false"
+            - name: REGISTRY_CREDS
+              value: ""
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: KUBECONFIG
+              value: /etc/kubeconfig/kubeconfig
+          volumeMounts:
+            - name: kubeconfig
+              mountPath: "/etc/kubeconfig"
+              readOnly: true
+            - name: ingress-cert
+              mountPath: /etc/assisted-ingress-cert
+      serviceAccountName: assisted-service
+      volumes:
+        - name: kubeconfig
+          secret:
+            secretName: $REPLACE_ASSISTED_KUBECONFIG
+        - name: ingress-cert
+          configMap:
+            defaultMode: 420
+            name: default-ingress-cert

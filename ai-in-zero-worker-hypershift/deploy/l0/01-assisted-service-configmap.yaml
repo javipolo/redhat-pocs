@@ -1,0 +1,68 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: assisted-service-config
+  namespace: $REPLACE_NAMESPACE
+  labels:
+    app: assisted-service
+data:
+  SERVICE_BASE_URL: http://assisted-service-$REPLACE_NAMESPACE.apps.dev.redhat.com
+  IMAGE_SERVICE_BASE_URL: http://assisted-image-service-$REPLACE_NAMESPACE.apps.dev.redhat.com
+  NAMESPACE: $REPLACE_NAMESPACE
+  BASE_DNS_DOMAINS: ""
+  OS_IMAGES: '[{"openshift_version":"4.8","cpu_architecture":"x86_64","url":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.8/4.8.14/rhcos-4.8.14-x86_64-live.x86_64.iso","version":"48.84.202109241901-0"},{"openshift_version":"4.9","cpu_architecture":"x86_64","url":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.9/4.9.40/rhcos-4.9.40-x86_64-live.x86_64.iso","version":"49.84.202206171736-0"},{"openshift_version":"4.10","cpu_architecture":"x86_64","url":"https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/4.10/4.10.16/rhcos-4.10.16-x86_64-live.x86_64.iso","version":"410.84.202205191234-0"},{"openshift_version":"4.10","cpu_architecture":"arm64","url":"https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/4.10/4.10.16/rhcos-4.10.16-aarch64-live.aarch64.iso","version":"410.84.202205191023-0"},{"openshift_version":"4.11","cpu_architecture":"x86_64","url":"https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/pre-release/4.11.0-rc.2/rhcos-4.11.0-rc.2-x86_64-live.x86_64.iso","version":"411.86.202207090519-0"},{"openshift_version":"4.11","cpu_architecture":"arm64","url":"https://mirror.openshift.com/pub/openshift-v4/aarch64/dependencies/rhcos/pre-release/4.11.0-rc.2/rhcos-4.11.0-rc.2-aarch64-live.aarch64.iso","version":"411.86.202207090159-0"}]'
+  MUST_GATHER_IMAGES: ""
+  CREATE_S3_BUCKET: "False"
+  ENABLE_AUTO_ASSIGN: "true"
+  AUTH_TYPE: local
+  JWKS_URL: https://api.openshift.com/.well-known/jwks.json
+  SKIP_CERT_VERIFICATION: "false"
+  PUBLIC_CONTAINER_REGISTRIES: quay.io,registry.svc.ci.openshift.org
+  CHECK_CLUSTER_VERSION: "True"
+  IPV6_SUPPORT: "True"
+  HW_VALIDATOR_REQUIREMENTS: |
+    [{
+      "version": "default",
+      "master": {
+        "cpu_cores": 4,
+        "ram_mib": 16384,
+        "disk_size_gb": 100,
+        "installation_disk_speed_threshold_ms": 10,
+        "network_latency_threshold_ms": 100,
+        "packet_loss_percentage": 0
+      },
+      "worker": {
+        "cpu_cores": 2,
+        "ram_mib": 8192,
+        "disk_size_gb": 100,
+        "installation_disk_speed_threshold_ms": 10,
+        "network_latency_threshold_ms": 1000,
+        "packet_loss_percentage": 10
+      },
+      "sno": {
+        "cpu_cores": 8,
+        "ram_mib": 16384,
+        "disk_size_gb": 100,
+        "installation_disk_speed_threshold_ms": 10
+      }
+    }]
+  ISO_IMAGE_TYPE: minimal-iso
+
+
+  DEPLOY_TARGET: k8s
+  ENABLE_AUTO_ASSIGN: "True"
+  ENABLE_KUBE_API: "True"
+  ENABLE_SINGLE_NODE_DNSMASQ: "True"
+
+  AGENT_DOCKER_IMAGE: quay.io/edge-infrastructure/assisted-installer-agent@sha256:e41d8e1215d2206a59fab3f7d81303b786b287148ec9e8b6ee28282988586ec1
+  CONTROLLER_IMAGE: quay.io/edge-infrastructure/assisted-installer-controller@sha256:8c5735c77c492ead1cbd0100a92540d3f53735c0f2f0f7e7e8c230fdea64e83d
+  SELF_VERSION: quay.io/edge-infrastructure/assisted-service@sha256:f4348141d3a8c69e9c962e198a0d9ff2c098b1b359d071d70477d14fd13b464c
+  LOG_FORMAT: text
+  LOG_LEVEL: info
+
+  SERVICE_CA_CERT_PATH: /etc/assisted-ingress-cert/ca-bundle.crt
+
+  REGISTRY_CREDS: ""
+  SERVE_HTTPS: "True"
+  STORAGE: filesystem

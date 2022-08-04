@@ -1,0 +1,159 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    hypershift.openshift.io/release-image: quay.io/openshift-release-dev/ocp-release:4.11.0-rc.2-x86_64
+    k8s.v1.cni.cncf.io/network-status: |-
+      [{
+          "name": "openshift-sdn",
+          "interface": "eth0",
+          "ips": [
+              "10.128.0.72"
+          ],
+          "default": true,
+          "dns": {}
+      }]
+    k8s.v1.cni.cncf.io/networks-status: |-
+      [{
+          "name": "openshift-sdn",
+          "interface": "eth0",
+          "ips": [
+              "10.128.0.72"
+          ],
+          "default": true,
+          "dns": {}
+      }]
+    openshift.io/scc: restricted
+  labels:
+    app: konnectivity-agent
+    hypershift.openshift.io/control-plane-component: konnectivity-agent
+    hypershift.openshift.io/hosted-control-plane: myclusters-acm-1
+  name: konnectivity-agent-assisted
+  namespace: myclusters-acm-1
+spec:
+  affinity:
+    nodeAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - preference:
+          matchExpressions:
+          - key: hypershift.openshift.io/control-plane
+            operator: In
+            values:
+            - "true"
+        weight: 50
+      - preference:
+          matchExpressions:
+          - key: hypershift.openshift.io/cluster
+            operator: In
+            values:
+            - myclusters-acm-1
+        weight: 100
+    podAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - podAffinityTerm:
+          labelSelector:
+            matchLabels:
+              hypershift.openshift.io/hosted-control-plane: myclusters-acm-1
+          topologyKey: kubernetes.io/hostname
+        weight: 100
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            app: konnectivity-agent
+            hypershift.openshift.io/control-plane-component: konnectivity-agent
+        topologyKey: topology.kubernetes.io/zone
+  automountServiceAccountToken: false
+  containers:
+  - args:
+    - --logtostderr=true
+    - --ca-cert
+    - /etc/konnectivity/agent/ca.crt
+    - --agent-cert
+    - /etc/konnectivity/agent/tls.crt
+    - --agent-key
+    - /etc/konnectivity/agent/tls.key
+    - --proxy-server-host
+    - konnectivity-server
+    - --proxy-server-port
+    - "8091"
+    - --health-server-port
+    - "2041"
+    - --agent-identifiers
+    - ipv4=$REPLACE_WEBHOOK_CLUSTER_IP
+    - --keepalive-time
+    - 30s
+    - --probe-interval
+    - 30s
+    - --sync-interval
+    - 1m
+    - --sync-interval-cap
+    - 5m
+    command:
+    - /usr/bin/proxy-agent
+    image: quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:859953424df60cbcbc87de2426bf98df3cd699f5b6e6915ffba796e89a0c33d7
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 3
+      httpGet:
+        path: healthz
+        port: 2041
+        scheme: HTTP
+      initialDelaySeconds: 120
+      periodSeconds: 60
+      successThreshold: 1
+      timeoutSeconds: 30
+    name: konnectivity-agent
+    resources:
+      requests:
+        cpu: 40m
+        memory: 50Mi
+    securityContext:
+      capabilities:
+        drop:
+        - KILL
+        - MKNOD
+        - SETGID
+        - SETUID
+      runAsUser: 1000700000
+    volumeMounts:
+    - mountPath: /etc/konnectivity/agent
+      name: agent-certs
+  enableServiceLinks: true
+  imagePullSecrets:
+  - name: default-dockercfg-6l2xf
+  - name: pull-secret
+  priorityClassName: hypershift-control-plane
+  restartPolicy: Always
+  securityContext:
+    fsGroup: 1000700000
+    seLinuxOptions:
+      level: s0:c26,c25
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoSchedule
+    key: hypershift.openshift.io/control-plane
+    operator: Equal
+    value: "true"
+  - effect: NoSchedule
+    key: hypershift.openshift.io/cluster
+    operator: Equal
+    value: myclusters-acm-1
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoSchedule
+    key: node.kubernetes.io/memory-pressure
+    operator: Exists
+  volumes:
+  - name: agent-certs
+    secret:
+      defaultMode: 420
+      secretName: konnectivity-agent

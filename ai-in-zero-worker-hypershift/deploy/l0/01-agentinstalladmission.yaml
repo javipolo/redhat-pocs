@@ -1,0 +1,81 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.beta.openshift.io/serving-cert-secret-name: agentinstalladmission
+  labels:
+    app: agentinstalladmission
+  name: agentinstalladmission
+  namespace: $REPLACE_NAMESPACE
+spec:
+  ports:
+  - name: agentinstalladmission
+    port: 443
+    protocol: TCP
+    targetPort: 9443
+  selector:
+    app: agentinstalladmission
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentinstalladmission
+  namespace: $REPLACE_NAMESPACE
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      agentinstalladmission: "true"
+      app: agentinstalladmission
+  template:
+    metadata:
+      labels:
+        agentinstalladmission: "true"
+        app: agentinstalladmission
+      name: agentinstalladmission
+    spec:
+      containers:
+      - command:
+        - /assisted-service-admission
+        - --authorization-kubeconfig=/etc/kubeconfig/kubeconfig
+        - --authentication-kubeconfig=/etc/kubeconfig/kubeconfig
+        - --kubeconfig=/etc/kubeconfig/kubeconfig
+        - --secure-port=9443
+        - --audit-log-path=-
+        - --tls-cert-file=/var/serving-cert/tls.crt
+        - --tls-private-key-file=/var/serving-cert/tls.key
+        image: quay.io/edge-infrastructure/assisted-service@sha256:f4348141d3a8c69e9c962e198a0d9ff2c098b1b359d071d70477d14fd13b464c
+        imagePullPolicy: IfNotPresent
+        name: agentinstalladmission
+        ports:
+        - containerPort: 9443
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /healthz
+            port: 9443
+            scheme: HTTPS
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        env:
+        - name: KUBECONFIG
+          value: /etc/kubeconfig/kubeconfig
+        volumeMounts:
+        - mountPath: /var/serving-cert
+          name: serving-cert
+        - name: kubeconfig
+          mountPath: "/etc/kubeconfig"
+          readOnly: true
+      volumes:
+      - name: serving-cert
+        secret:
+          defaultMode: 420
+          secretName: agentinstalladmission
+      - name: kubeconfig
+        secret:
+          secretName: $REPLACE_WEBHOOK_KUBECONFIG
