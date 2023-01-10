@@ -1,0 +1,134 @@
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: dev-extraworker-0
+  namespace: assisted-installer
+  labels:
+    infraenvs.agent-install.openshift.io: myinfraenv
+  annotations:
+    inspect.metal3.io: disabled
+spec:
+  online: true
+  bootMACAddress: 00:d9:9b:96:cc:af
+  bmc:
+    address: redfish-virtualmedia+http://192.168.111.1:8000/redfish/v1/Systems/1f7ffe1f-c7ea-46e5-844b-818c1b2bdddd
+    credentialsName: dev-extraworker-0-bmc-secret
+  automatedCleaningMode: disabled
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: dev-extraworker-1
+  namespace: assisted-installer
+  labels:
+    infraenvs.agent-install.openshift.io: myinfraenv
+  annotations:
+    inspect.metal3.io: disabled
+spec:
+  online: true
+  bootMACAddress: 00:d9:9b:96:cc:b3
+  bmc:
+    address: redfish-virtualmedia+http://192.168.111.1:8000/redfish/v1/Systems/b1e94fbb-1985-4fd6-a6fc-d14fa8ffdf8d
+    credentialsName: dev-extraworker-1-bmc-secret
+  automatedCleaningMode: disabled
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: dev-extraworker-2
+  namespace: assisted-installer
+  labels:
+    infraenvs.agent-install.openshift.io: myinfraenv
+  annotations:
+    inspect.metal3.io: disabled
+spec:
+  online: true
+  bootMACAddress: 00:d9:9b:96:cc:b7
+  bmc:
+    address: redfish-virtualmedia+http://192.168.111.1:8000/redfish/v1/Systems/58062a91-fc63-4949-98c8-dfed5b6ab82f
+    credentialsName: dev-extraworker-2-bmc-secret
+  automatedCleaningMode: disabled
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: dev-extraworker-3
+  namespace: assisted-installer
+  labels:
+    infraenvs.agent-install.openshift.io: myinfraenv
+  annotations:
+    inspect.metal3.io: disabled
+spec:
+  online: true
+  bootMACAddress: 00:d9:9b:96:cc:bb
+  bmc:
+    address: redfish-virtualmedia+http://192.168.111.1:8000/redfish/v1/Systems/01370395-8593-44ce-9755-d71479aa3d67
+    credentialsName: dev-extraworker-3-bmc-secret
+  automatedCleaningMode: disabled
+---
+apiVersion: metal3.io/v1alpha1
+kind: BareMetalHost
+metadata:
+  name: dev-extraworker-4
+  namespace: assisted-installer
+  labels:
+    infraenvs.agent-install.openshift.io: myinfraenv
+  annotations:
+    inspect.metal3.io: disabled
+spec:
+  online: true
+  bootMACAddress: 00:d9:9b:96:cc:bf
+  bmc:
+    address: redfish-virtualmedia+http://192.168.111.1:8000/redfish/v1/Systems/ef7c84a5-506b-49ca-9f96-9a0ee80ad62c
+    credentialsName: dev-extraworker-4-bmc-secret
+  automatedCleaningMode: disabled
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dev-extraworker-0-bmc-secret
+  namespace: assisted-installer
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: cGFzc3dvcmQ=
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dev-extraworker-1-bmc-secret
+  namespace: assisted-installer
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: cGFzc3dvcmQ=
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dev-extraworker-2-bmc-secret
+  namespace: assisted-installer
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: cGFzc3dvcmQ=
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dev-extraworker-3-bmc-secret
+  namespace: assisted-installer
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: cGFzc3dvcmQ=
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dev-extraworker-4-bmc-secret
+  namespace: assisted-installer
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: cGFzc3dvcmQ=
