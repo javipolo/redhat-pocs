@@ -317,6 +317,7 @@ EOF
 
 # Create ClusterImageSet
 
+```
 cat << EOF | oc apply -f -
 apiVersion: hive.openshift.io/v1
 kind: ClusterImageSet
@@ -326,6 +327,7 @@ metadata:
 spec:
   releaseImage: quay.io/openshift-release-dev/ocp-release:4.12.0-rc.1-x86_64
 EOF
+```
 
 # Define some variables
 ```
