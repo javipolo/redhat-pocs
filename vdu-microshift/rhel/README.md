@@ -31,6 +31,38 @@ dnf install -y microshift
 systemctl enable --now microshift
 ```
 
+## Node Tuning Operator
+We will apply the tunning profiles using tuned, which is already available both in RHEL and rhel4edge
+
+### Initial profile copy
+The profiles are already provided in this repo, but here's the method used to extract them from a working cluster:
+
+- Apply the vDU profiles to a working SNO cluster
+```
+oc --context $SNO_CONTEXT apply -f manifests/nto
+```
+- Copy the rendered profiles from a tuned pod, and "fix" them as needed
+```
+POD=$(oc --context $SNO_CONTEXT -n openshift-cluster-node-tuning-operator get po -l openshift-app=tuned -o'jsonpath={.items[0].metadata.name}')
+# Do this for all the needed profiles
+oc --context $SNO_CONTEXT -n openshift-cluster-node-tuning-operator cp $POD:/etc/tuned/openshift-node-performance-performance tuned/openshift-node-performance-performance
+```
+
+The list of the profiles I needed to copy are:
+- /usr/lib/tuned/cpu-partitioning
+- /usr/lib/tuned/openshift
+- /etc/tuned/openshift-node
+- /etc/tuned/openshift-node-performance-performance
+- /etc/tuned/performance-patch
+
+Watch out for isolated_cores definition both in cpu-partitioning and openshift-node-performance-performance
+
+### Copy the profiles to the microshift node and apply them
+```
+scp -r tuned/* microshift:/etc/tuned
+ssh microshift sudo tuned-adm profile openshift-node-performance-performance
+```
+
 ## Minimal Openshift CRDs
 We will need to install some basic OpenShift CRDs and create basic CRs for them, so other operators wont complain
 
