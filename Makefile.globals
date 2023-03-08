@@ -14,11 +14,12 @@ PXE_DIR=$(git_root)/iso2pxe
 PXE_NET=pxe
 PXE_ADDRESS=192.168.125.1
 NET_MAIN_INTERFACE=eno1
+AICLI_EXTRA_PARAMS=
 
 # Kcli defaults
 CLUSTER_ISO_PATH=$(ISO_DIR)/$(CLUSTER_NAME).iso
 KCLI_TEMPLATE_DISK={"size": $(DISK_SIZE), "pool": "$(VIRSH_DISK_POOL)"}
-KCLI_TEMPLATE_CLUSTER=-P iso="$(CLUSTER_ISO_PATH)" -P memory=16384 -P numcpus=8 -P disks=['$(KCLI_TEMPLATE_DISK)']
+KCLI_TEMPLATE_CLUSTER=-P iso="$(CLUSTER_ISO_PATH)" -P memory=20000 -P numcpus=8 -P disks=['$(KCLI_TEMPLATE_DISK)']
 
 # Aicli defaults
 CLUSTER_OCP_VERSION=4.10
@@ -58,14 +59,15 @@ cluster-create:
 	  -P api_vip=$(CLUSTER_API_VIP) \
 	  -P ingress_vip=$(CLUSTER_INGRESS_VIP) \
 	  -P network_type=$(CLUSTER_NETWORK_TYPE) \
-	  -P ssh_public_key="$(CLUSTER_SSH_PUBLIC_KEY)"
+	  -P ssh_public_key="$(CLUSTER_SSH_PUBLIC_KEY)" $(AICLI_EXTRA_PARAMS)
 
 cluster-download-iso:
 	@$(aicli) download iso --path /local $(CLUSTER_NAME)
 	@mv $(git_root)/$(CLUSTER_NAME).iso $(CLUSTER_ISO_PATH)
 
 wait-hosts:
-	@until $(aicli) list hosts | grep ' $(CLUSTER_NAME)_infra-env ' | grep ' known ' | wc -l | grep -qx $(CLUSTER_HOST_NUM); do echo "Waiting for $(CLUSTER_HOST_NUM) hosts to be discovered for cluster $(CLUSTER_NAME)"; sleep 5; done
+	@echo "Waiting for $(CLUSTER_HOST_NUM) hosts to be discovered for cluster $(CLUSTER_NAME)"
+	@until $(aicli) list hosts | grep ' $(CLUSTER_NAME)_infra-env ' | grep ' known ' | wc -l | grep -qx $(CLUSTER_HOST_NUM); do echo -n .; sleep 5; done; echo ""
 	@echo "Hosts discovered"
 
 wait-cluster:
