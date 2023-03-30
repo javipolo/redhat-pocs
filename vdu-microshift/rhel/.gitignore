@@ -3,3 +3,6 @@ crd
 not_crd
 ocp-release
 tmp
+systemd_enable
+to_copy
+thanos-object-storage.yaml

@@ -80,7 +80,7 @@ cluster-check:
 	@while true; do $(aicli) list hosts|grep $(CLUSTER_NAME); sleep 10; echo "";done
 
 clean-cluster: ## Delete cluster
-	-@$(aicli) delete cluster $(CLUSTER_NAME)
+	-@$(aicli) delete cluster -y $(CLUSTER_NAME)
 
 ai-kubeconfig:
 	# $(aicli) download kubeconfig $(CLUSTER_NAME) --stdout | sed s/admin/$(CLUSTER_NAME)/g > $(KUBECONFIGS_DIR)/kubeconfig.$(CLUSTER_NAME)
