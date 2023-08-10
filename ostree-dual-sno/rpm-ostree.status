@@ -1,0 +1,5 @@
+State: idle
+Deployments:
+● ostree-unverified-registry:quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:87230f7f44e28fb137822bed659de5cedf338a79a9ed7456fd747a47ad84cc95
+                   Digest: sha256:87230f7f44e28fb137822bed659de5cedf338a79a9ed7456fd747a47ad84cc95
+                  Version: 414.92.202307250657-0 (2023-08-11T09:42:08Z)
