@@ -1,4 +1,5 @@
-# Create cluster and get kubeconfig
+# Hub cluster configuration
+## Create cluster and get kubeconfig
 
 ```
 # Create and install cluster
@@ -7,7 +8,8 @@ make cluster
 oc config get-contexts
 ```
 
-# Install RHACM
+## Install RHACM
+### Create Subscriptions
 
 ```
 oc create namespace open-cluster-management
@@ -40,13 +42,13 @@ spec:
 EOF
 ```
 
-# Wait for CRD and install MCH
+### Wait for CRD and install MCH
 ```
 oc get csv -n open-cluster-management -w
 oc get po -n open-cluster-management -w
 ```
 
-# Create MultiClusterHub
+### Create MultiClusterHub
 ```
 cat << EOF | oc apply -f -
 apiVersion: operator.open-cluster-management.io/v1
@@ -58,13 +60,14 @@ spec: {}
 EOF
 ```
 
-# And wait for everything to be deployed
+### And wait for everything to be deployed
 ```
 oc get mch -n open-cluster-management -w
 oc get po -n open-cluster-management -w
 ```
 
-# Setup local-storage operator
+## Setup local-storage operator
+### Create subscriptions
 ```
 cat << EOF | oc apply -f -
 ---
@@ -99,12 +102,12 @@ spec:
 EOF
 ```
 
-# Wait for it to be deployed
+### Wait for it to be deployed
 ```
 oc get po -n openshift-local-storage -w
 ```
 
-# And set-up a localVolume
+### And set-up a localVolume
 
 ```
 cat << EOF | oc apply -f -
@@ -128,26 +131,20 @@ spec:
 EOF
 ```
 
-# See that eventually PersistentVolumes are created:
+### See that eventually PersistentVolumes are created:
 ```
 oc get po -n openshift-local-storage -w
 oc get pv -w
 ```
 
 
-# Set storageclass as cluster default
+### Set storageclass as cluster default
 ```
 oc patch storageclass localstorage -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 ```
 
-# Setup Hive and Assisted Service
-
-# Tweak hive config
-```
-oc patch hiveconfig hive --type merge -p '{"spec":{"targetNamespace":"hive","logLevel":"debug","featureGates":{"custom":{"enabled":["AlphaAgentInstallStrategy"]},"featureSet":"Custom"}}}'
-```
-
-# Setup assisted-service
+## Setup Assisted Service
+### Create AgentServiceConfig
 ```
 cat << EOF | oc apply -f -
 apiVersion: agent-install.openshift.io/v1beta1
@@ -181,10 +178,11 @@ spec:
 EOF
 ```
 
-# We need assisted-installer DNS entry so ztp machines can access assisted-service for installation purposes
+### IMPORTANT: We need assisted-installer DNS entry so ztp machines can access assisted-service for installation purposes
 
+# Creation of spoke cluster
 
-# Create spoke cluster
+### Main cluster's CRs
 
 In AgentClusterInstall we define the spoke cluster configuration
 in imageSetRef we put the reference to the ClusterImageSet resource that defines the openshift release that we want to install
@@ -282,7 +280,7 @@ spec:
 EOF
 ```
 
-# Create infraenv
+### Create infraenv
 In this example will create a infraenv in its own namespace, so we can use it in different clusters
 Since the infraenv wont be bound to any cluster, we will later need to bind each agent to the ztp cluster that we want
 
@@ -311,62 +309,69 @@ spec:
 EOF
 ```
 
-# Download ISO
+### Download ISO
 ```
 oc get infraenv -n my-infraenv my-infraenv -o jsonpath='{.status.isoDownloadURL}' | xargs curl -kLo /home/isos/ztp-cluster1.iso
 ```
 
-# Create VMs
+### Create VMs
 ```
 make ztp-vms
 ```
 
-# Wait for agents to pop up
+### Wait for agents to pop up
 ```
 oc get agent -n my-infraenv -w
 ```
 
-# Patch the agents to bind to cluster
+### Patch the agents to bind to cluster
 ```
 oc get agent -n my-infraenv -ojson | jq -r '.items[] | select(.spec.approved==false) | .metadata.name' | xargs oc -n my-infraenv patch -p '{"spec":{"clusterDeploymentName":{"name": "cluster1", "namespace": "cluster1"}}}' --type merge agent
 ```
 
-# Approve agents
+### Approve agents
+```
 oc get agent -n my-infraenv -ojson | jq -r '.items[] | select(.spec.approved==false) | .metadata.name'| xargs oc -n my-infraenv patch -p '{"spec":{"approved":true}}' --type merge agent
+```
 
-# Wait for installation process to complete
+### Wait for installation process to complete
+```
 while true; do oc get agent -n my-infraenv -ojson  | jq -r '.items[] | "\(.status.inventory.hostname) \(.status.role) \(.metadata.name) \(.status.debugInfo.state) \(.status.progress.currentStage)"'| sort ; sleep 10; echo ""; done
+```
 
-# Get kubeconfig and check nodes
+### Get kubeconfig and check nodes
+```
 oc extract -n cluster1 secret/cluster1-admin-kubeconfig --to=- > cluster1-kubeconfig
 KUBECONFIG=cluster1-kubeconfig oc get node
+```
 
 # Day 2 operations
 We will start a new node after the cluster has been provisioned
 
-# Boot the machine with the same ISO
+## Create a new node and bind it to the cluster
+### Boot a new machine with the same ISO used to create the spoke cluster
 ```
 make ztp-day2
 ```
 
-# Wait for agent to pop up
+### Wait for agent to pop up
 ```
 oc get agent -n my-infraenv -w
 ```
 
-# Bind to cluster and approve agent
+### Bind to cluster and approve agent
 ```
 oc get agent -n my-infraenv -ojson | jq -r '.items[] | select(.spec.approved==false) | .metadata.name' | xargs oc -n my-infraenv patch -p '{"spec":{"clusterDeploymentName":{"name": "cluster1", "namespace": "cluster1"}}}' --type merge agent
 oc get agent -n my-infraenv -ojson | jq -r '.items[] | select(.spec.approved==false) | .metadata.name'| xargs oc -n my-infraenv patch -p '{"spec":{"approved":true}}' --type merge agent
 ```
 
-# Monitor agent/node status
+### Monitor agent/node status
 We will monitor the state of the agent, and at some point it will get stuck in . Then we proceed to next step
 ```
 while true; do oc get agent -n my-infraenv -ojson  | jq -r '.items[] | "\(.status.inventory.hostname) \(.status.role) \(.metadata.name) \(.status.debugInfo.state) \(.status.progress.currentStage)"'| sort ; sleep 10; echo ""; done
 ```
 
-# Approve CertificateSigningRequest
+### Approve CertificateSigningRequest
 Now we wait until a CertificateSigningRequest is created in cluster1, and we will need to approve it. Once approved, a new CSR will be created, and we need to also approve it too
 
 
@@ -377,7 +382,7 @@ KUBECONFIG=cluster1-kubeconfig oc get csr -w | grep Pending
 KUBECONFIG=cluster1-kubeconfig oc get csr -o json | jq '.items[] | select(.status.conditions==null) | .metadata.name' -r | KUBECONFIG=cluster1-kubeconfig xargs -n1 oc adm certificate approve
 ```
 
-# Wait for node to be appear as Ready
+### Wait for node to be appear as Ready
 ```
 KUBECONFIG=cluster1-kubeconfig oc get node -w
 ```
