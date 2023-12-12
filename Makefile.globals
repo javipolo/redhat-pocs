@@ -37,7 +37,7 @@ PULL_SECRET=$(git_root)/pull_secret.json
 KCLI_IMAGE=quay.io/karmab/kcli
 AICLI_IMAGE=quay.io/karmab/aicli
 kcli=podman run --net host -i --rm --security-opt label=disable -v $(ISO_DIR):$(ISO_DIR) -v $(IMG_DIR):$(IMG_DIR) -v $(HOME)/.ssh:/root/.ssh -v $(HOME)/.kcli:/root/.kcli -v /var/lib/libvirt/images:/var/lib/libvirt/images -v /var/run/libvirt:/var/run/libvirt -v $(PWD):/workdir -v /var/tmp:/ignitiondir $(KCLI_IMAGE)
-aicli=podman run -i --rm -e AI_OFFLINETOKEN=$(AI_OFFLINETOKEN) -v $(SSH_KEY):$(SSH_KEY) -v $(git_root):/local $(AICLI_IMAGE) -U $(ASSISTED_SERVICE)
+aicli=podman run -it --rm -e AI_OFFLINETOKEN=$(AI_OFFLINETOKEN) -v $(SSH_KEY):$(SSH_KEY) -v $(git_root):/local $(AICLI_IMAGE) -U $(ASSISTED_SERVICE)
 apicurl=$(git_root)/bin/apicurl
 
 default: help
@@ -69,6 +69,7 @@ wait-hosts:
 	@echo "Waiting for $(CLUSTER_HOST_NUM) hosts to be discovered for cluster $(CLUSTER_NAME)"
 	@until $(aicli) list hosts | grep ' $(CLUSTER_NAME)_infra-env ' | grep ' known ' | wc -l | grep -qx $(CLUSTER_HOST_NUM); do echo -n .; sleep 5; done; echo ""
 	@echo "Hosts discovered"
+	@sleep 10
 
 wait-cluster:
 	@$(aicli) wait cluster $(CLUSTER_NAME)

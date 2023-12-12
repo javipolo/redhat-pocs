@@ -4,3 +4,4 @@ pull-secret.json
 */clusters
 iso2pxe
 boilerplate
+tmp*
