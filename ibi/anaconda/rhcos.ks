@@ -5,7 +5,7 @@ clearpart --all --initlabel --disklabel=gpt
 
 part biosboot  --size=1    --fstype=biosboot
 part /boot/efi --size=127  --fstype=efi      --label=EFI-SYSTEM
-part /boot     --size=384  --fstype=ext2     --label=boot
+part /boot     --size=384  --fstype=ext4     --label=boot       --mkfsoptions="-O ^orphan_file"
 part /         --grow      --fstype xfs      --label=root
 
 ostreecontainer --url quay.io/jpolo/ibi:latest --no-signature-verification
