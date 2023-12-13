@@ -3,10 +3,9 @@ text
 # Basic partitioning
 clearpart --all --initlabel --disklabel=gpt
 
-part prepboot  --size=4    --fstype=prepboot
 part biosboot  --size=1    --fstype=biosboot
-part /boot/efi --size=256  --fstype=efi      --label=EFI-SYSTEM
-part /boot     --size=512  --fstype=ext2     --label=boot
+part /boot/efi --size=127  --fstype=efi      --label=EFI-SYSTEM
+part /boot     --size=384  --fstype=ext2     --label=boot
 part /         --grow      --fstype xfs      --label=root
 
 ostreecontainer --url quay.io/jpolo/ibi:latest --no-signature-verification
