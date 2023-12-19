@@ -31,7 +31,7 @@ CLUSTER_SSH_PUBLIC_KEY=$(shell cat $(HOME)/.ssh/id_rsa.pub)
 
 CLUSTER_DIR=clusters/$(NAME)
 CLUSTER_ID=$(shell test -e $(CLUSTER_DIR)/cluster.json && jq -r .id $(CLUSTER_DIR)/cluster.json)
-PULL_SECRET=$(git_root)/pull_secret.json
+PULL_SECRET ?= $(git_root)/pull_secret.json
 
 # Aliased commands
 KCLI_IMAGE=quay.io/karmab/kcli
