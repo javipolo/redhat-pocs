@@ -15,10 +15,12 @@ This PoC will:
 1. Define a few environment variables:
 ```
 export SEED_IMAGE=quay.io/whatever/ostbackup:seed
-export SSH_PUBLIC_KEY=~/.ssh/id_dsa.pub
+export SSH_PUBLIC_KEY=~/.ssh/id_rsa.pub
 export PULL_SECRET=$(jq -c . /path/to/my/pull-secret.json)
 export BACKUP_SECRET=$(jq -c . /path/to/my/repo/credentials.json)
 ```
+
+* You might need to execute: ```make -C ../../ dpes``` if this is the first time you are using this repo
 
 2. Prepare a coreos live iso with a custom ignition
 ```

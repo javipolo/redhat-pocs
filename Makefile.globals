@@ -10,6 +10,7 @@ VIRSH_DISK_POOL=ocp
 DISK_SIZE=120
 IMG_DIR=/home/images
 ISO_DIR=/home/isos
+LIBVIRT_STORAGE_POOL_PATH=/home/libvirt-ocp
 PXE_DIR=$(git_root)/iso2pxe
 PXE_NET=pxe
 PXE_ADDRESS=192.168.125.1
