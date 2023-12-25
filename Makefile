@@ -61,9 +61,9 @@ deps: ## Install dependencies
 	systemctl enable libvirtd
 	curl -L https://github.com/openshift-online/ocm-cli/releases/download/v0.1.60/ocm-linux-amd64 -o /usr/local/bin/ocm
 	chmod +x /usr/local/bin/ocm
-	curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz | sudo tar xvzC usr/local/bin
+	curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/stable/openshift-client-linux.tar.gz | sudo tar xvzC /usr/local/bin
 	curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-	mkdir -p /root/.kcli $(ISO_DIR) $(IMG_DIR)
+	mkdir -p /root/.kcli $(ISO_DIR) $(IMG_DIR) $(LIBVIRT_STORAGE_POOL_PATH)
 	grep -q kcli $(HOME)/.bashrc || echo "alias kcli='$(kcli)'" >> $(HOME)/.bashrc
 	grep -q aicli $(HOME)/.bashrc || echo "alias aicli='$(aicli)'" >> $(HOME)/.bashrc
 	virsh pool-define virsh/storage-pool.xml

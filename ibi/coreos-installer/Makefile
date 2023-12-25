@@ -35,6 +35,7 @@ $(TMPDIR)/ignition.json: credentials $(TMPDIR)
 .PHONY: iso
 iso: $(COREOS_INSTALLER) $(RHCOS_LIVE_ISO) $(TMPDIR)/ignition.json ## Embed ignition into live ISO
 	-rm -f $(ISO_PATH)
+	mkdir -p $(ISO_DIR)
 	$(COREOS_INSTALLER) iso ignition embed -i $(TMPDIR)/ignition.json -o $(ISO_PATH) $(RHCOS_LIVE_ISO)
 	chmod a+r $(ISO_PATH)
 
