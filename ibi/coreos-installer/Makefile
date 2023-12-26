@@ -14,6 +14,12 @@ COREOS_INSTALLER=$(TMPDIR)/coreos-installer
 ISO_PATH=$(ISO_DIR)/rhcos-ibi.iso
 KCLI_TEMPLATE=-P iso="$(ISO_PATH)" -P memory=33792 -P numcpus=16 -P disks=['$(KCLI_TEMPLATE_DISK)']
 SSH_PUBLIC_KEY=$(HOME)/.ssh/id_rsa.pub
+CONFIG_DIR=./config
+CLUSTER_CONFIG_TEMPLATE=manifest.template
+CLUSTER_CONFIG_PATH=$(CONFIG_DIR)/cluster-configuration/manifest.json
+DOMAIN:=redhat.com
+CLUSTER_NAME:=other-test-sno
+HOSTNAME:=ibi
 
 $(TMPDIR):
 	mkdir $@
@@ -76,3 +82,32 @@ ostree-restore: credentials
 	scp certs.tgz ostree-restore.sh $(TMPDIR)/*-secret.json core@$(VM_NAME):/var/tmp
 	ssh core@$(VM_NAME) sudo /var/tmp/ostree-restore.sh $(SEED_IMAGE)
 
+.PHONY: certs
+certs:
+	@echo "Generating new certificates"
+	rm -rf ./certs ./kubeconfig
+	./scripts/generate_certs.sh
+
+.PHONY: $(CLUSTER_CONFIG_PATH)
+$(CLUSTER_CONFIG_PATH):
+	rm -rf $@
+	VM_NAME=$(VM_NAME) \
+	CLUSTER_NAME=$(CLUSTER_NAME) \
+	DOMAIN=$(DOMAIN) \
+	HOSTNAME=$(HOSTNAME) \
+	scripts/generate_config.sh $(CLUSTER_CONFIG_TEMPLATE) $@
+
+.PHONY: config
+config: $(CLUSTER_CONFIG_PATH)
+
+.PHONY: config.iso
+config.iso: certs config
+	mkisofs -o $@ -R -V "relocation-config" $(CONFIG_DIR)
+	cp $@ $(LIBVIRT_STORAGE_POOL_PATH)
+
+attach-config.iso:
+	virsh change-media $(VM_NAME) hdc $(LIBVIRT_STORAGE_POOL_PATH)/config.iso
+
+.PHONY:
+install:
+	ssh core@$(VM_NAME) sudo reboot

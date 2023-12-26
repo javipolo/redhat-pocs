@@ -1,2 +1,6 @@
 certs.tgz
+certs/
+config/certs
+config.iso
+config/cluster-configuration
 tmp/*
