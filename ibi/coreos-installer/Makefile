@@ -109,5 +109,5 @@ attach-config.iso:
 	virsh change-media $(VM_NAME) hdc $(LIBVIRT_STORAGE_POOL_PATH)/config.iso
 
 .PHONY:
-install:
+reboot:
 	ssh core@$(VM_NAME) sudo reboot
