@@ -36,9 +36,30 @@ make vm
 ```
 make logs
 ```
+wait until the installation is complete (this step takes about a minute):
+```
+Jan 01 08:12:18 ibi install-rhcos-and-restore-seed.sh[4523]: ----------------------------------------------------------------------------------------
+Jan 01 08:12:18 ibi install-rhcos-and-restore-seed.sh[1589]: DONE. Be sure to attach the relocation site info to the host and you can reboot the node
+Jan 01 08:12:18 ibi install-rhcos-and-restore-seed.sh[4525]: ----------------------------------------------------------------------------------------
+Jan 01 08:12:18 ibi systemd[1]: Finished SNO Image Based Installation.
+```
 
-4. Attach configuration ISO
+4. Generate the configuration ISO and attach it to the VM
+```
+make config.iso 
+make attach-config.iso
+```
+
 5. Reboot VM
 ```
-virsh reboot ibi
+make reboot
+```
+
+After few minutes your cluster should be ready.
+
+6. Use oc to query the API:
+```
+[coreos-installer]# oc get node
+NAME   STATUS   ROLES                         AGE   VERSION
+ibi    Ready    control-plane,master,worker   15m   v1.27.8+4fab27b
 ```
