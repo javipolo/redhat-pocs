@@ -9,8 +9,7 @@ VM_MAC=fa:ba:da:1b:11:b1
 TMPDIR=tmp
 RHCOS_LIVE_ISO_URL=https://mirror.openshift.com/pub/openshift-v4/amd64/dependencies/rhcos/latest/rhcos-live.x86_64.iso
 RHCOS_LIVE_ISO=$(TMPDIR)/rhcos-live.iso
-COREOS_INSTALLER_URL=https://mirror.openshift.com/pub/openshift-v4/amd64/clients/coreos-installer/latest/coreos-installer
-COREOS_INSTALLER=$(TMPDIR)/coreos-installer
+COREOS_INSTALLER=quay.io/coreos/coreos-installer:latest
 ISO_PATH=$(ISO_DIR)/rhcos-ibi.iso
 KCLI_TEMPLATE=-P iso="$(ISO_PATH)" -P memory=33792 -P numcpus=16 -P disks=['$(KCLI_TEMPLATE_DISK)']
 SSH_PUBLIC_KEY=$(HOME)/.ssh/id_rsa.pub
@@ -24,10 +23,6 @@ HOSTNAME?=ibi
 $(TMPDIR):
 	mkdir $@
 
-$(COREOS_INSTALLER): $(TMPDIR)
-	curl -o $@ $(COREOS_INSTALLER_URL)
-	chmod +x $@
-
 $(RHCOS_LIVE_ISO):
 	curl -L $(RHCOS_LIVE_ISO_URL) > $@
 
@@ -39,10 +34,11 @@ $(TMPDIR)/ignition.json: credentials $(TMPDIR)
 		podman run -i -v $(shell pwd):/scripts/:rw,Z  --rm quay.io/coreos/butane:release --pretty --strict -d /scripts > $@
 
 .PHONY: iso
-iso: $(COREOS_INSTALLER) $(RHCOS_LIVE_ISO) $(TMPDIR)/ignition.json ## Embed ignition into live ISO
+iso: ISO_DIR:=$(shell dirname $(ISO_PATH))
+iso: $(RHCOS_LIVE_ISO) $(TMPDIR)/ignition.json ## Embed ignition into live ISO
 	-rm -f $(ISO_PATH)
 	mkdir -p $(ISO_DIR)
-	$(COREOS_INSTALLER) iso ignition embed -i $(TMPDIR)/ignition.json -o $(ISO_PATH) $(RHCOS_LIVE_ISO)
+	podman run -v $(shell pwd):/data:rw,Z -v $(ISO_DIR):$(ISO_DIR):rw,Z $(COREOS_INSTALLER) iso ignition embed -i /data/$(TMPDIR)/ignition.json -o $(ISO_PATH) /data/$(RHCOS_LIVE_ISO)
 	chmod a+r $(ISO_PATH)
 
 .PHONY: iso-clean
