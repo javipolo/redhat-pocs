@@ -1,2 +1,7 @@
 certs.tgz
+certs/
+config/certs
+config.iso
+config/cluster-configuration/manifest.json
+kubeconfig
 tmp/*
