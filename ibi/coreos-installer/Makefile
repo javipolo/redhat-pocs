@@ -17,9 +17,9 @@ SSH_PUBLIC_KEY=$(HOME)/.ssh/id_rsa.pub
 CONFIG_DIR=./config
 CLUSTER_CONFIG_TEMPLATE=manifest.template
 CLUSTER_CONFIG_PATH=$(CONFIG_DIR)/cluster-configuration/manifest.json
-DOMAIN:=redhat.com
-CLUSTER_NAME:=other-test-sno
-HOSTNAME:=ibi
+DOMAIN?=redhat.com
+CLUSTER_NAME?=other-test-sno
+HOSTNAME?=ibi
 
 $(TMPDIR):
 	mkdir $@
@@ -91,11 +91,13 @@ certs:
 .PHONY: $(CLUSTER_CONFIG_PATH)
 $(CLUSTER_CONFIG_PATH):
 	rm -rf $@
+	MASTER_IP=$(shell virsh domifaddr ${VM_NAME} | grep ipv4 | awk -F " " '{print $$4}' | cut -d'/' -f1) \
+	CLUSTER_ID=$(shell uuidgen) \
 	VM_NAME=$(VM_NAME) \
 	CLUSTER_NAME=$(CLUSTER_NAME) \
 	DOMAIN=$(DOMAIN) \
 	HOSTNAME=$(HOSTNAME) \
-	scripts/generate_config.sh $(CLUSTER_CONFIG_TEMPLATE) $@
+	envsubst < $(CLUSTER_CONFIG_TEMPLATE) > $@
 
 .PHONY: config
 config: $(CLUSTER_CONFIG_PATH)
@@ -105,9 +107,11 @@ config.iso: certs config
 	mkisofs -o $@ -R -V "relocation-config" $(CONFIG_DIR)
 	cp $@ $(LIBVIRT_STORAGE_POOL_PATH)
 
+
+.PHONY: attach-config.iso
 attach-config.iso:
 	virsh change-media $(VM_NAME) hdc $(LIBVIRT_STORAGE_POOL_PATH)/config.iso
 
-.PHONY:
+.PHONY: reboot
 reboot:
-	ssh core@$(VM_NAME) sudo reboot
+	virsh reboot $(VM_NAME)

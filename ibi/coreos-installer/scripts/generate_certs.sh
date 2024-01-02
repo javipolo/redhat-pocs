@@ -17,6 +17,12 @@ KUBECONFIG_FILE="kubeconfig"
 
 # Create a temporary OpenSSL configuration file
 config_file=$(mktemp)
+
+function cleanup(){
+   rm -fr "$config_file"
+}
+trap cleanup EXIT
+
 cat <<EOF > "$config_file"
 [req]
 distinguished_name = req
