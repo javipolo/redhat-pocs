@@ -10,6 +10,7 @@ TMPDIR=tmp
 RHCOS_LIVE_ISO_URL=https://mirror.openshift.com/pub/openshift-v4/amd64/dependencies/rhcos/latest/rhcos-live.x86_64.iso
 RHCOS_LIVE_ISO=$(TMPDIR)/rhcos-live.iso
 COREOS_INSTALLER=quay.io/coreos/coreos-installer:latest
+LCA_IMAGE := $(or $(LCA_IMAGE), quay.io/openshift-kni/lifecycle-agent-operator:4.14.0)
 ISO_PATH=$(ISO_DIR)/rhcos-ibi.iso
 KCLI_TEMPLATE=-P iso="$(ISO_PATH)" -P memory=33792 -P numcpus=16 -P disks=['$(KCLI_TEMPLATE_DISK)']
 SSH_PUBLIC_KEY=$(HOME)/.ssh/id_rsa.pub
@@ -30,6 +31,8 @@ $(RHCOS_LIVE_ISO):
 $(TMPDIR)/ignition.json: credentials $(TMPDIR)
 	SSH_PUBLIC_KEY="$(shell cat $(SSH_PUBLIC_KEY))" \
 	SEED_IMAGE="$(SEED_IMAGE)" \
+	SEED_VERSION="$(SEED_VERSION)" \
+	LCA_IMAGE="$(LCA_IMAGE)" \
 	  envsubst < butane-ignition.yaml | \
 		podman run -i -v $(shell pwd):/scripts/:rw,Z  --rm quay.io/coreos/butane:release --pretty --strict -d /scripts > $@
 

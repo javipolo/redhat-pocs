@@ -4,6 +4,8 @@ set -e # Halt on error
 
 seed_image=${1:-$SEED_IMAGE}
 installation_disk=${2:-/dev/vda}
+seed_version=${3:-$SEED_VERSION}
+lca_image=${4:-$LCA_IMAGE}
 
 coreos-installer install ${installation_disk}
 
@@ -33,4 +35,4 @@ EOF
 systemctl start crio
 
 # To be changed when ibi-seed-install binary is created
-/usr/local/bin/ostree-restore.sh $seed_image
+/usr/local/bin/ostree-restore.sh $seed_image $seed_version $lca_image

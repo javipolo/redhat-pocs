@@ -15,6 +15,8 @@ This PoC will:
 1. Define a few environment variables:
 ```
 export SEED_IMAGE=quay.io/whatever/ostbackup:seed
+export SEED_VERSION=version_matching_seed_version
+export LCA_IMAGE=quay.io/customized/lca_image:your_tag
 export SSH_PUBLIC_KEY=~/.ssh/id_rsa.pub
 export PULL_SECRET=$(jq -c . /path/to/my/pull-secret.json)
 export BACKUP_SECRET=$(jq -c . /path/to/my/repo/credentials.json)
