@@ -86,7 +86,8 @@ ostree-restore: credentials
 certs:
 	@echo "Generating new certificates"
 	rm -rf ./certs ./kubeconfig
-	./scripts/generate_certs.sh
+	./scripts/generate_certs.sh $(CLUSTER_NAME) $(DOMAIN)
+
 
 .PHONY: $(CLUSTER_CONFIG_PATH)
 $(CLUSTER_CONFIG_PATH):

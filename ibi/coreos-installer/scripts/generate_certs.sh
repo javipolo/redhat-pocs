@@ -2,7 +2,9 @@
 set -e
 
 # Set the cluster and user names
-CLUSTER_NAME="other-test-sno.example.com"
+CLUSTER_NAME="${1:-$CLUSTER_NAME}"
+DOMAIN="${2:-DOMAIN}"
+CLUSTER_FQDN="${CLUSTER_NAME}"."${DOMAIN}"
 USER_NAME="system:admin"
 CA_NAME="admin-kubeconfig-signer"
 LOADBALANCER_SIGNER_NAME="loadbalancer-serving-signer"
@@ -87,7 +89,7 @@ generate_self_signed_certs "${INGRESS_OPERATOR_SIGNER_NAME}" "ingress-operator"@
 cat "${CERT_DIR}/${LOADBALANCER_SIGNER_NAME}.crt" "${CERT_DIR}/${LOCALHOST_SIGNER_NAME}.crt" "${CERT_DIR}/${SERVICE_NETWORK_SIGNER_NAME}.crt" "${CERT_DIR}/${INGRESS_OPERATOR_SIGNER_NAME}.crt" > "${CERT_DIR}/serving-signer-ca.crt"
 
 # Set the cluster context in kubeconfig
-kubectl config set-cluster "${CLUSTER_NAME}" --server="https://api.${CLUSTER_NAME}:6443" --certificate-authority="${CERT_DIR}/serving-signer-ca.crt" --embed-certs=true --kubeconfig="${KUBECONFIG_FILE}"
+kubectl config set-cluster "${CLUSTER_NAME}" --server="https://api.${CLUSTER_FQDN}:6443" --certificate-authority="${CERT_DIR}/serving-signer-ca.crt" --embed-certs=true --kubeconfig="${KUBECONFIG_FILE}"
 
 # Set the user in kubeconfig
 kubectl config set-credentials "${USER_NAME}" --client-certificate="${CERT_DIR}/${USER_NAME}-crt.pem" --client-key="${CERT_DIR}/${USER_NAME}-key.pem" --embed-certs=true --kubeconfig="${KUBECONFIG_FILE}"
