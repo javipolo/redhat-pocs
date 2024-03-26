@@ -1,0 +1,30 @@
+name = "microshift"
+description = "microshift"
+version = "0.0.1"
+modules = []
+groups = []
+
+[[packages]]
+name = "microshift"
+version = "*"
+
+# [[packages]]
+# name = "microshift-olm"
+# version = "*"
+
+[customizations.services]
+enabled = ["microshift"]
+
+[[customizations.user]]
+name = "user"
+description = "user"
+# Password test
+# Generate your own password with openssl passwd -6
+password = "$6$K/uCrxV29MwpL80H$p2q3LESHCnfYx3UbFH5tLJoNvT/jy70scR/I9i.iiUR8yqjM3NfRLMDm09f75836JqVsBD0yxoZK7ltFwlUwp0" # notsecret
+#  Public ssh key
+key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOuJP7bS3YNBQz5fDlyyZ7FlIXEK9xaGLxGZcaH/7vTe"
+home = "/home/user/"
+shell = "/bin/bash"
+groups = ["users", "wheel"]
+uid = 10000
+gid = 0
