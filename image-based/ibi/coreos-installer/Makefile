@@ -2,7 +2,7 @@
 default-help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-include ../../Makefile.globals
+include ../../../Makefile.globals
 
 VM_NAME=ibi
 VM_MAC=fa:ba:da:1b:11:b1

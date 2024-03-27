@@ -1,0 +1,18 @@
+# Get RHCOS base image of target cluster `oc adm release info --image-for rhel-coreos`
+# FROM quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:5b1124faf4b73753b4679085604dd8cb810c4a7a2e659978f5c80183bb165f94
+
+# Use a rhel-coreos base
+# oc adm release info --image-for rhel-coreos quay.io/openshift-release-dev/ocp-release:4.16.0-ec.5-x86_64
+FROM quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:ab5d794885c8a93c5550d959be95e1ea83abf0d091ffe67b85275f64b86f3206
+
+LABEL com.openshift.lifecycle-agent.seed_format_version=3
+
+# Add some basic bootc install config:
+# [install.filesystem.root]
+# type = "xfs"
+COPY 00-bootc.toml /usr/lib/bootc/install/00-bootc.toml
+
+COPY seed /var/tmp/seed
+# RUN tar xzf /var/tmp/seed/var.tgz -C /
+# RUN tar xzf /var/tmp/seed/etc.tgz -C / || true
+# RUN ostree container commit
