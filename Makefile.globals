@@ -23,15 +23,18 @@ KCLI_TEMPLATE_DISK={"size": $(DISK_SIZE), "pool": "$(VIRSH_DISK_POOL)"}
 KCLI_TEMPLATE_CLUSTER=-P iso="$(CLUSTER_ISO_PATH)" -P memory=20000 -P numcpus=8 -P disks=['$(KCLI_TEMPLATE_DISK)']
 
 # Aicli defaults
-CLUSTER_OCP_VERSION=4.10
-CLUSTER_HOST_NUM=5
-CLUSTER_PULL_SECRET=local/pull_secret.json
-CLUSTER_NETWORK_TYPE=OpenShiftSDN
-CLUSTER_BASEDOMAIN=redhat.com
-CLUSTER_SSH_PUBLIC_KEY=$(shell cat $(HOME)/.ssh/id_rsa.pub)
+CLUSTER_OCP_VERSION ?= 4.10
+CLUSTER_OCP_RELEASE ?=
+CLUSTER_API_VIP ?=
+CLUSTER_INGRESS_VIP ?=
+CLUSTER_HOST_NUM ?= 5
+CLUSTER_PULL_SECRET ?= local/pull_secret.json
+CLUSTER_NETWORK_TYPE ?= OpenShiftSDN
+CLUSTER_BASEDOMAIN ?= redhat.com
+CLUSTER_SSH_PUBLIC_KEY ?= $(shell cat $(HOME)/.ssh/id_rsa.pub)
 
-CLUSTER_DIR=clusters/$(NAME)
-CLUSTER_ID=$(shell test -e $(CLUSTER_DIR)/cluster.json && jq -r .id $(CLUSTER_DIR)/cluster.json)
+CLUSTER_DIR ?= clusters/$(NAME)
+CLUSTER_ID ?= $(shell test -e $(CLUSTER_DIR)/cluster.json && jq -r .id $(CLUSTER_DIR)/cluster.json)
 PULL_SECRET ?= $(git_root)/pull_secret.json
 
 # Aliased commands
@@ -53,14 +56,15 @@ cluster: cluster-create cluster-download-iso vms wait-hosts cluster-start wait-c
 
 cluster-create:
 	@$(aicli) create cluster $(CLUSTER_NAME) \
-	  -P openshift_version=$(CLUSTER_OCP_VERSION) \
-	  -P ocp_release_image=$(CLUSTER_OCP_RELEASE_NONEXISTEN) \
-	  -P pull_secret=$(CLUSTER_PULL_SECRET) \
-	  -P base_dns_domain=$(CLUSTER_BASEDOMAIN) \
-	  -P api_vip=$(CLUSTER_API_VIP) \
-	  -P ingress_vip=$(CLUSTER_INGRESS_VIP) \
-	  -P network_type=$(CLUSTER_NETWORK_TYPE) \
-	  -P ssh_public_key="$(CLUSTER_SSH_PUBLIC_KEY)" $(AICLI_EXTRA_PARAMS)
+		$(CLUSTER_OCP_VERSION:%=-P openshift_version=%) \
+		$(CLUSTER_OCP_RELEASE:%=-P ocp_release_image=%) \
+		$(CLUSTER_API_VIP:%=-P api_vip=%) \
+		$(CLUSTER_INGRESS_VIP:%=-P ingress_vip=%) \
+		-P pull_secret=$(CLUSTER_PULL_SECRET) \
+		-P base_dns_domain=$(CLUSTER_BASEDOMAIN) \
+		-P network_type=$(CLUSTER_NETWORK_TYPE) \
+		-P ssh_public_key="$(CLUSTER_SSH_PUBLIC_KEY)" \
+		$(AICLI_EXTRA_PARAMS)
 
 cluster-download-iso:
 	@$(aicli) download iso --path /local $(CLUSTER_NAME)
