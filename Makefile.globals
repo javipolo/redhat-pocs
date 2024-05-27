@@ -31,7 +31,7 @@ CLUSTER_API_VIP ?=
 CLUSTER_INGRESS_VIP ?=
 CLUSTER_HOST_NUM ?= 5
 CLUSTER_PULL_SECRET ?= local/pull_secret.json
-CLUSTER_NETWORK_TYPE ?= OpenShiftSDN
+CLUSTER_NETWORK_TYPE ?= OVNKubernetes
 CLUSTER_BASEDOMAIN ?= redhat.com
 CLUSTER_SSH_PUBLIC_KEY ?= $(shell cat $(HOME)/.ssh/id_rsa.pub)
 
