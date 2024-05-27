@@ -1,29 +1,31 @@
 SHELL := bash
-SSH_KEY=$(HOME)/.ssh/id_rsa.pub
+SSH_KEY ?= $(HOME)/.ssh/id_rsa.pub
 # AI_OFFLINETOKEN=put here your assisted installer token. You can get it from https://console.redhat.com/openshift/token
-ASSISTED_SERVICE=https://api.openshift.com
-API_URL=$(ASSISTED_SERVICE)/api/assisted-install
-git_root=$(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-KUBECONFIGS_DIR=$(HOME)/.kube/configs
-KUBECONFIG=$(HOME)/.kube/config
-VIRSH_DISK_POOL=ocp
-DISK_SIZE=120
-IMG_DIR=/home/images
-ISO_DIR=/home/isos
-LIBVIRT_STORAGE_POOL_PATH=/home/libvirt-ocp
-PXE_DIR=$(git_root)/iso2pxe
-PXE_NET=pxe
-PXE_ADDRESS=192.168.125.1
-NET_MAIN_INTERFACE=eno1
-AICLI_EXTRA_PARAMS=
+ASSISTED_SERVICE ?= https://api.openshift.com
+API_URL ?= $(ASSISTED_SERVICE)/api/assisted-install
+git_root ?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+KUBECONFIGS_DIR ?= $(HOME)/.kube/configs
+KUBECONFIG ?= $(HOME)/.kube/config
+VIRSH_DISK_POOL ?= ocp
+DISK_SIZE ?= 120
+IMG_DIR ?= /home/images
+ISO_DIR ?= /home/isos
+LIBVIRT_STORAGE_POOL_PATH ?= /home/libvirt-ocp
+PXE_DIR ?= $(git_root)/iso2pxe
+PXE_NET ?= pxe
+PXE_ADDRESS ?= 192.168.125.1
+NET_MAIN_INTERFACE ?= eno1
+AICLI_EXTRA_PARAMS ?=
+KCLI_MEMORY ?= 20000
+KCLI_NUMCPUS ?= 8
 
 # Kcli defaults
-CLUSTER_ISO_PATH=$(ISO_DIR)/$(CLUSTER_NAME).iso
-KCLI_TEMPLATE_DISK={"size": $(DISK_SIZE), "pool": "$(VIRSH_DISK_POOL)"}
-KCLI_TEMPLATE_CLUSTER=-P iso="$(CLUSTER_ISO_PATH)" -P memory=20000 -P numcpus=8 -P disks=['$(KCLI_TEMPLATE_DISK)']
+CLUSTER_ISO_PATH ?= $(ISO_DIR)/$(CLUSTER_NAME).iso
+KCLI_TEMPLATE_DISK ?= {"size": $(DISK_SIZE), "pool": "$(VIRSH_DISK_POOL)"}
+KCLI_TEMPLATE_CLUSTER ?= -P iso="$(CLUSTER_ISO_PATH)" -P memory=$(KCLI_MEMORY) -P numcpus=$(KCLI_NUMCPUS) -P disks=['$(KCLI_TEMPLATE_DISK)']
 
 # Aicli defaults
-CLUSTER_OCP_VERSION ?= 4.10
+CLUSTER_OCP_VERSION ?= 4.15
 CLUSTER_OCP_RELEASE ?=
 CLUSTER_API_VIP ?=
 CLUSTER_INGRESS_VIP ?=
@@ -38,11 +40,11 @@ CLUSTER_ID ?= $(shell test -e $(CLUSTER_DIR)/cluster.json && jq -r .id $(CLUSTER
 PULL_SECRET ?= $(git_root)/pull_secret.json
 
 # Aliased commands
-KCLI_IMAGE=quay.io/karmab/kcli
-AICLI_IMAGE=quay.io/karmab/aicli
-kcli=podman run --net host -i --rm --security-opt label=disable -v $(ISO_DIR):$(ISO_DIR) -v $(IMG_DIR):$(IMG_DIR) -v $(HOME)/.ssh:/root/.ssh -v $(HOME)/.kcli:/root/.kcli -v /var/lib/libvirt/images:/var/lib/libvirt/images -v /var/run/libvirt:/var/run/libvirt -v $(PWD):/workdir -v /var/tmp:/ignitiondir $(KCLI_IMAGE)
-aicli=podman run -it --rm -e AI_OFFLINETOKEN=$(AI_OFFLINETOKEN) -v $(SSH_KEY):$(SSH_KEY) -v $(git_root):/local $(AICLI_IMAGE) -U $(ASSISTED_SERVICE)
-apicurl=$(git_root)/bin/apicurl
+KCLI_IMAGE ?= quay.io/karmab/kcli
+AICLI_IMAGE ?= quay.io/karmab/aicli
+kcli ?= podman run --net host -i --rm --security-opt label=disable -v $(ISO_DIR):$(ISO_DIR) -v $(IMG_DIR):$(IMG_DIR) -v $(HOME)/.ssh:/root/.ssh -v $(HOME)/.kcli:/root/.kcli -v /var/lib/libvirt/images:/var/lib/libvirt/images -v /var/run/libvirt:/var/run/libvirt -v $(PWD):/workdir -v /var/tmp:/ignitiondir $(KCLI_IMAGE)
+aicli ?= podman run -it --rm -e AI_OFFLINETOKEN=$(AI_OFFLINETOKEN) -v $(SSH_KEY):$(SSH_KEY) -v $(git_root):/local $(AICLI_IMAGE) -U $(ASSISTED_SERVICE)
+apicurl ?= $(git_root)/bin/apicurl
 
 default: help
 
@@ -86,7 +88,7 @@ cluster-check:
 	@while true; do $(aicli) list hosts|grep $(CLUSTER_NAME); sleep 10; echo "";done
 
 clean-cluster: ## Delete cluster
-	-@$(aicli) delete cluster $(CLUSTER_NAME)
+	-@$(aicli) delete cluster -y $(CLUSTER_NAME)
 
 ai-kubeconfig:
 	# $(aicli) download kubeconfig $(CLUSTER_NAME) --stdout | sed s/admin/$(CLUSTER_NAME)/g > $(KUBECONFIGS_DIR)/kubeconfig.$(CLUSTER_NAME)
