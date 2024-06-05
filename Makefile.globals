@@ -91,10 +91,17 @@ clean-cluster: ## Delete cluster
 	-@$(aicli) delete cluster -y $(CLUSTER_NAME)
 
 ai-kubeconfig:
-	# $(aicli) download kubeconfig $(CLUSTER_NAME) --stdout | sed s/admin/$(CLUSTER_NAME)/g > $(KUBECONFIGS_DIR)/kubeconfig.$(CLUSTER_NAME)
 	@$(aicli) download kubeconfig --path /local $(CLUSTER_NAME)
+	@$(aicli) download kubeadmin-password --path /local $(CLUSTER_NAME)
 	sed -i s/admin/$(CLUSTER_NAME)/g $(git_root)/kubeconfig.$(CLUSTER_NAME)
-	mv $(git_root)/kubeconfig.$(CLUSTER_NAME) $(KUBECONFIGS_DIR)
+	@( \
+		echo -n '# $(CLUSTER_NAME) kubeadmin password: '; \
+		cat $(git_root)/kubeadmin-password.$(CLUSTER_NAME); \
+		echo; \
+		cat $(git_root)/kubeconfig.$(CLUSTER_NAME) \
+	) > $(KUBECONFIGS_DIR)/kubeconfig.$(CLUSTER_NAME)
+	@rm -f $(git_root)/kubeconfig.$(CLUSTER_NAME) $(git_root)/kubeadmin-password.$(CLUSTER_NAME)
+
 
 kubeconfig: ai-kubeconfig ## Generate kubeconfig and merge it into main kubeconfig file
 	KUBECONFIG=$(shell ls $(KUBECONFIGS_DIR)/*| paste -s -d:) oc config view --flatten > $(KUBECONFIG)
