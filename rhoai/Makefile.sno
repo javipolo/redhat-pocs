@@ -1,0 +1,12 @@
+CLUSTER_HOST_NUM = 1
+AICLI_EXTRA_PARAMS = -P sno=true
+KCLI_MEMORY = 150000
+KCLI_NUMCPUS = 40
+
+include Makefile
+
+vms:
+	@$(kcli) create vm $(KCLI_TEMPLATE_CLUSTER) -P nets=['{"name": "default", "mac": "fa:ba:da:0a:a1:da"}'] $(CLUSTER_NAME)-1
+
+clean-vms: ## Delete cluster nodes
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-1

@@ -5,7 +5,7 @@ ASSISTED_SERVICE ?= https://api.openshift.com
 API_URL ?= $(ASSISTED_SERVICE)/api/assisted-install
 git_root ?= $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 KUBECONFIGS_DIR ?= $(HOME)/.kube/configs
-KUBECONFIG ?= $(HOME)/.kube/config
+KUBECONFIG_DEFAULT ?= $(HOME)/.kube/config
 VIRSH_DISK_POOL ?= ocp
 DISK_SIZE ?= 120
 IMG_DIR ?= /home/images
@@ -104,6 +104,6 @@ ai-kubeconfig:
 
 
 kubeconfig: ai-kubeconfig ## Generate kubeconfig and merge it into main kubeconfig file
-	KUBECONFIG=$(shell ls $(KUBECONFIGS_DIR)/*| paste -s -d:) oc config view --flatten > $(KUBECONFIG)
+	KUBECONFIG=$(shell ls $(KUBECONFIGS_DIR)/*| paste -s -d:) oc config view --flatten > $(KUBECONFIG_DEFAULT)
 
 .PHONY: help

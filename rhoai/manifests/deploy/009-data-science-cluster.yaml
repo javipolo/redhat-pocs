@@ -1,0 +1,22 @@
+apiVersion: datasciencecluster.opendatahub.io/v1
+kind: DataScienceCluster
+metadata:
+  name: default-dsc
+spec:
+  components:
+    codeflare:
+      managementState: Managed
+    dashboard:
+      managementState: Managed
+    datasciencepipelines:
+      managementState: Managed
+    kserve:
+      managementState: Managed
+    kueue:
+      managementState: Managed
+    modelmeshserving:
+      managementState: Managed
+    ray:
+      managementState: Managed
+    workbenches:
+      managementState: Managed

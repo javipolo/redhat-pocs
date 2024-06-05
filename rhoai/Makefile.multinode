@@ -1,0 +1,17 @@
+CLUSTER_HOST_NUM = 3
+CLUSTER_API_VIP = 192.168.122.240
+CLUSTER_INGRESS_VIP = 192.168.122.241
+KCLI_MEMORY = 50000
+KCLI_NUMCPUS = 24
+
+include Makefile
+
+vms: ## Provision cluster nodes
+	@$(kcli) create vm $(KCLI_TEMPLATE_CLUSTER) -P nets=['{"name": "default", "mac": "fa:ba:da:0a:a1:da"}'] $(CLUSTER_NAME)-1
+	@$(kcli) create vm $(KCLI_TEMPLATE_CLUSTER) -P nets=['{"name": "default", "mac": "fa:ba:da:0a:a1:db"}'] $(CLUSTER_NAME)-2
+	@$(kcli) create vm $(KCLI_TEMPLATE_CLUSTER) -P nets=['{"name": "default", "mac": "fa:ba:da:0a:a1:dc"}'] $(CLUSTER_NAME)-3
+
+clean-vms: ## Delete cluster nodes
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-1
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-2
+	-@$(kcli) delete vm -y $(CLUSTER_NAME)-3
