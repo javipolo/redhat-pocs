@@ -27,4 +27,5 @@ make deploy
 ### IBI related
 
 - openshift-pipelines certificate not supported by recert (GeneralTime not supported)
+  Should be handled by https://github.com/rh-ecosystem-edge/recert/pull/167
 - RHOAI related routes are not rewritten (they stay with the seed URL)
