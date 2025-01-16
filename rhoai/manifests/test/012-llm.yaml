@@ -17,7 +17,7 @@ metadata:
   name: hftoken
   namespace: ic-shared-llm
 data:
-  token: aGZfV0ZhcVhUYmFBSmJEbmhjamhYYXRORmFteEtvaEdvU0tOTg==
+  token: aGZfV0ZhcVhUYmFBSmJEbmhjamhYYXRORmFteEtvaEdvU0tOTg== # notsecret
 type: Opaque
 
 ---
