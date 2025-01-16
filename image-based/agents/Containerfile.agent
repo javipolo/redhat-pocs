@@ -1,0 +1,12 @@
+FROM registry.redhat.io/rhel9/rhel-bootc:9.4
+
+# Image mode does not support customizations.files in config.toml, so we inject sudoers file from here
+RUN echo -e "%wheel\tALL=(ALL)\tNOPASSWD: ALL" > "/etc/sudoers.d/%wheel" \
+    && chmod 0440 /etc/sudoers.d/%wheel
+
+# Mount an overlay fs on /opt so it's readwrite and no SELinux tweaks are necessary
+COPY opt.mount /usr/lib/systemd/system/opt.mount
+RUN mkdir -p /var/opt/overlay-upper /var/opt/overlay-work && systemctl enable opt.mount
+
+RUN dnf install -y \
+      vim-enhanced

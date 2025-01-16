@@ -1,0 +1,28 @@
+FROM registry.redhat.io/rhel9/rhel-bootc:9.4
+
+# Image mode does not support customizations.files in config.toml, so we inject sudoers file from here
+RUN echo -e "%wheel\tALL=(ALL)\tNOPASSWD: ALL" > "/etc/sudoers.d/%wheel" \
+    && chmod 0440 /etc/sudoers.d/%wheel
+
+# Mount an overlay fs on /opt so it's readwrite and no SELinux tweaks are necessary
+COPY opt.mount /usr/lib/systemd/system/opt.mount
+RUN mkdir -p /var/opt/overlay-upper /var/opt/overlay-work && systemctl enable opt.mount
+
+RUN dnf install -y \
+      vim-enhanced
+
+# Before, copy RPM into oracle directory
+# Also, extract post and pre scripts from oracle RPM into oracle directory
+COPY oracle /tmp/assets
+
+ENV JAVA_PACKAGE=java-1.8.0-openjdk-headless
+ENV JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.432.b06-3.el9.x86_64/jre
+
+RUN dnf -y install $JAVA_PACKAGE
+
+RUN dnf -y install $JAVA_PACKAGE \
+  && bash /tmp/assets/pre-install-hack.sh 1 \
+  && dnf -y install --setopt=tsflags=noscripts /tmp/assets/oracle*.rpm \
+  && SYSTEM_MANAGER_OVERRIDE=1 bash /tmp/assets/post-install-hack.sh 1 \
+  && /opt/oracle/mgmt_agent/agent_inst/bin/setup.sh opts=/tmp/assets/javipolo.rsp \
+  && dnf clean all

@@ -1,0 +1,25 @@
+FROM registry.redhat.io/rhel9/rhel-bootc:9.4
+
+# Image mode does not support customizations.files in config.toml, so we inject sudoers file from here
+RUN echo -e "%wheel\tALL=(ALL)\tNOPASSWD: ALL" > "/etc/sudoers.d/%wheel" \
+    && chmod 0440 /etc/sudoers.d/%wheel
+
+# Mount an overlay fs on /opt so it's readwrite and no SELinux tweaks are necessary
+COPY opt.mount /usr/lib/systemd/system/opt.mount
+RUN mkdir -p /var/opt/overlay-upper /var/opt/overlay-work && systemctl enable opt.mount
+
+RUN dnf install -y \
+      vim-enhanced
+
+COPY falcon /tmp/assets
+
+ARG FALCON_CID
+
+RUN dnf -y install /tmp/assets/*.rpm \
+  && sed -i 's/\[Unit\]/\[Unit\]\nStartLimitIntervalSec=10/' /usr/lib/systemd/system/falcon-sensor.service \
+  && sed -i 's/\[Unit\]/\[Unit\]\nStartLimitBurst=3/' /usr/lib/systemd/system/falcon-sensor.service \
+  && sed -i 's/Restart=no/Restart=on-failure/' /usr/lib/systemd/system/falcon-sensor.service \
+  && /opt/CrowdStrike/falconctl -s --apd=true \
+  && /opt/CrowdStrike/falconctl -s --cid=$FALCON_CID \
+  && systemctl enable falcon-sensor \
+  && dnf clean all

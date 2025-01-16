@@ -1,0 +1,17 @@
+[Unit]
+Description=OverlayFS for /opt
+DefaultDependencies=no
+;Before=local-fs.target
+;After=systemd-remount-fs.service
+After=local-fs.target
+Before=multi-user.target
+
+[Mount]
+What=overlay
+Where=/opt
+Type=overlay
+Options=lowerdir=/opt,upperdir=/var/opt/overlay-upper,workdir=/var/opt/overlay-work
+
+[Install]
+;WantedBy=local-fs.target
+WantedBy=multi-user.target
