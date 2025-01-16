@@ -1,0 +1,1 @@
++ /sbin/runuser - mgmt_agent -c '"/var/opt/oracle/mgmt_agent/agent_inst/bin/agentcore"  "start"' -s /bin/bash

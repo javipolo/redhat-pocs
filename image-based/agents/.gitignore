@@ -1,0 +1,5 @@
+build
+images
+*.rpm
+*.gpg
+.env.*
