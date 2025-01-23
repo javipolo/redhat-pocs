@@ -29,6 +29,7 @@ image: ## Build container image
 		-t $(IMAGE_NAME) \
 		-f Containerfile.${PROJECT} \
 		$(FALCON_CID:%=--build-arg FALCON_CID=%) \
+		$(DD_API_KEY:%=--build-arg DD_API_KEY=%) \
 	.
 
 .PHONY: disk
@@ -85,3 +86,7 @@ help:
 		}\
 	' $(MAKEFILE_LIST)
 
+run-ansible: ## Run ansible in the VM
+	mkdir -p ansible/server/collections
+	$(ANSIBLE_COLLECTION:%=ansible-galaxy collection install ${ANSIBLE_COLLECTION} --collections-path ansible/server/collections)
+	ANSIBLE_CONFIG=ansible/server/ansible.cfg ansible-playbook ansible/${PROJECT}.yaml

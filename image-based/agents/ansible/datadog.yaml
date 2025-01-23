@@ -1,0 +1,8 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Import the Datadog Agent role from the Datadog collection
+      import_role:
+        name: datadog.dd.agent
+  vars:
+    datadog_api_key: "{{ lookup('env', 'DD_API_KEY') }}"

@@ -3,3 +3,4 @@ images
 *.rpm
 *.gpg
 .env.*
+ansible/server/collections

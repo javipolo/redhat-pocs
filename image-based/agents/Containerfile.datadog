@@ -1,0 +1,28 @@
+FROM registry.redhat.io/rhel9/rhel-bootc:9.4
+
+# Image mode does not support customizations.files in config.toml, so we inject sudoers file from here
+RUN echo -e "%wheel\tALL=(ALL)\tNOPASSWD: ALL" > "/etc/sudoers.d/%wheel" \
+    && chmod 0440 /etc/sudoers.d/%wheel
+
+# Mount an overlay fs on /opt so it's readwrite and no SELinux tweaks are necessary
+COPY opt.mount /usr/lib/systemd/system/opt.mount
+RUN mkdir -p /var/opt/overlay-upper /var/opt/overlay-work && systemctl enable opt.mount
+
+RUN dnf install -y vim-enhanced
+
+RUN dnf install -y python3-pip && \
+    python3 -m venv /tmp/ansible-venv && \
+    pip install ansible yq
+
+COPY ansible /tmp/ansible
+ARG DD_API_KEY
+ENV ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible
+RUN ansible-galaxy collection install datadog.dd
+# Disable all handlers
+RUN yq -y 'map(.when = false)' /tmp/ansible/ansible_collections/datadog/dd/roles/agent/handlers/main.yml > /tmp/edited.yaml \
+    && mv /tmp/edited.yaml /tmp/ansible/ansible_collections/datadog/dd/roles/agent/handlers/main.yml
+RUN ansible-playbook \
+      --connection=local \
+      --inventory 127.0.0.1, \
+      -e datadog_skip_running_check=true \
+      /tmp/ansible/datadog.yaml
