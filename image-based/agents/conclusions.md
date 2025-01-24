@@ -94,3 +94,4 @@ yq -y 'map(.when = false)' /tmp/ansible/ansible_collections/datadog/dd/roles/age
 With those tweaks, the image builds without problems, and I can run ansible in the installed system without problems
 
 I assume that if there is an update of the RPM in the repo there will be problems, though, so probably there should also be a condition to disable the update of the agent in the ansible code
+UPDATE: I downgraded datadog-agent RPM on build time, and then while running ansible on runtime, it did not try to update the RPM
