@@ -1,0 +1,65 @@
+[rhel-9-for-x86_64-baseos-rpms]
+name = Red Hat Enterprise Linux 9 for x86_64 - BaseOS (RPMs)
+baseurl = https://rhsm-pulp.corp.redhat.com/content/dist/rhel9/9.4/$basearch/baseos/os/
+enabled = 1
+gpgcheck = 1
+repo_gpgcheck = 0
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+metadata_expire = 86400
+enabled_metadata = 1
+sslverifystatus = 1
+
+[rhel-9-for-x86_64-baseos-eus-rpms]
+name = Red Hat Enterprise Linux 9 for x86_64 - BaseOS - Extended Update Support (RPMs)
+baseurl = https://rhsm-pulp.corp.redhat.com/content/eus/rhel9/9.4/$basearch/baseos/os/
+enabled = 1
+gpgcheck = 1
+repo_gpgcheck = 0
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+metadata_expire = 86400
+enabled_metadata = 1
+sslverifystatus = 1
+
+[rhel-9-for-x86_64-appstream-rpms]
+name = Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)
+baseurl = https://rhsm-pulp.corp.redhat.com/content/dist/rhel9/9.4/$basearch/appstream/os/
+enabled = 1
+gpgcheck = 1
+repo_gpgcheck = 0
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+metadata_expire = 86400
+enabled_metadata = 1
+sslverifystatus = 1
+
+[rhel-9-for-x86_64-appstream-eus-rpms]
+name = Red Hat Enterprise Linux 9 for x86_64 - AppStream - Extended Update Support (RPMs)
+baseurl = https://rhsm-pulp.corp.redhat.com/content/eus/rhel9/9.4/$basearch/appstream/os/
+enabled = 1
+gpgcheck = 1
+repo_gpgcheck = 0
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+metadata_expire = 86400
+enabled_metadata = 1
+sslverifystatus = 1
+
+[codeready-builder-for-rhel-9-x86_64-rpms]
+name = Red Hat CodeReady Linux Builder for RHEL 9 x86_64 (RPMs)
+baseurl = https://rhsm-pulp.corp.redhat.com/content/dist/rhel9/9.4/$basearch/codeready-builder/os
+enabled = 1
+gpgcheck = 1
+repo_gpgcheck = 0
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+metadata_expire = 86400
+enabled_metadata = 1
+sslverifystatus = 1
+
+[codeready-builder-for-rhel-9-x86_64-eus-rpms]
+name = Red Hat CodeReady Linux Builder for RHEL 9 x86_64 - Extended Update Support (RPMs)
+baseurl = https://rhsm-pulp.corp.redhat.com/content/eus/rhel9/9.4/$basearch/codeready-builder/os
+enabled = 1
+gpgcheck = 1
+repo_gpgcheck = 0
+gpgkey = file:///etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+metadata_expire = 86400
+enabled_metadata = 1
+sslverifystatus = 1

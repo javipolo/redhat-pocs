@@ -1,0 +1,15 @@
+[amdgpu-$rocmver]
+name=AMD GPU $rocmver
+baseurl=https://repo.radeon.com/amdgpu/$rocmver/el/9.4/main/x86_64/
+enabled=0
+priority=50
+gpgcheck=1
+gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key
+
+[ROCm-$rocmver]
+name=AMD ROCm $rocmver
+baseurl=https://repo.radeon.com/rocm/el9/$rocmver/main
+enabled=1
+priority=50
+gpgcheck=1
+gpgkey=https://repo.radeon.com/rocm/rocm.gpg.key

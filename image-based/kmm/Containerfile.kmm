@@ -1,0 +1,38 @@
+ARG DTK_AUTO=registry.stage.redhat.io/rhelai1/driver-toolkit-rhel9:1732039691
+ARG KERNEL_VERSION=5.14.0-427.50.1.el9_4.x86_64
+ARG ROCM_VERSION=6.2.3
+
+FROM ${DTK_AUTO} as builder
+USER root
+
+ARG ROCM_VERSION
+ARG KERNEL_VERSION
+
+# Remove all existing repo files, to have deterministic repositories
+# Add Red Hat repository configuration for BaseOS, AppStream and CodeReady Builder
+RUN rm -f /etc/yum.repos.d/*.repo \
+    && echo "9.4" > /etc/dnf/vars/releasever
+COPY repos/redhat.repo /tmp/redhat.repo
+
+RUN echo "${ROCM_VERSION}" > /etc/dnf/vars/rocmver
+COPY repos/rocm.repo /tmp/rocm.repo
+COPY repos/RPM-GPG-KEY-AMD-ROCM /etc/pki/rpm-gpg/RPM-GPG-KEY-AMD-ROCM
+
+RUN mv /tmp/*.repo /etc/yum.repos.d/ && \
+    rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-AMD-ROCM \
+    && cp -a /etc/dnf/dnf.conf{,.tmp} && mv /etc/dnf/dnf.conf{.tmp,} \
+    && dnf --enablerepo amdgpu-${ROCM_VERSION} install -y amdgpu-dkms amdgpu-dkms-firmware \
+    && dnf clean all && rm -rf /etc/yum.repos.d/*.repo
+
+FROM docker.io/redhat/ubi9-minimal
+ARG KERNEL_VERSION
+RUN microdnf -y install kmod openssl && \
+    microdnf clean all && \
+    rm -rf /var/cache/yum
+
+RUN --mount=type=bind,from=builder,source=/,destination=/tmp/builder,ro \
+    mkdir -p /opt/lib/modules/${KERNEL_VERSION} \
+    && cp -r /tmp/builder/lib/modules/${KERNEL_VERSION}/extra /opt/lib/modules/${KERNEL_VERSION}/extra \
+    && /usr/sbin/depmod -b /opt ${KERNEL_VERSION} \
+    && mkdir -p /opt/lib/firmware/updates \
+    && cp -a /tmp/builder/lib/firmware/updates/amdgpu /opt/lib/firmware/updates

@@ -1,0 +1,24 @@
+ARG BOOTC_IMAGE=registry.redhat.io/rhel9-eus/rhel-9.4-bootc:9.4-1736389745
+ARG BUILDER_IMAGE=quay.io/jpolo/rim-kmm:kmm
+ARG KERNEL_VERSION=5.14.0-427.50.1.el9_4.x86_64
+ARG ROCM_VERSION=6.2.3
+
+FROM ${BUILDER_IMAGE} AS builder
+
+FROM ${BOOTC_IMAGE}
+ARG KERNEL_VERSION
+ARG ROCM_VERSION
+
+COPY repos/rocm.repo /etc/yum.repos.d/rocm.repo
+COPY repos/RPM-GPG-KEY-AMD-ROCM /etc/pki/rpm-gpg/RPM-GPG-KEY-AMD-ROCM
+
+RUN --mount=type=bind,from=builder,source=/,destination=/tmp/builder,ro \
+    rm -f /lib/modules/${KERNEL_VERSION}/kernel/drivers/gpu/drm/amd/amdgpu/amdgpu.ko.xz \
+    && cp -r /tmp/builder/opt/lib/modules/${KERNEL_VERSION}/extra /lib/modules/${KERNEL_VERSION}/extra \
+    && echo amdgpu > /etc/modules-load.d/amdgpu.conf \
+    && depmod ${KERNEL_VERSION} \
+    && mkdir -p /lib/firmware/updates \
+    && cp -r /tmp/builder/opt/lib/firmware/updates/amdgpu /lib/firmware/updates/amdgpu \
+    && echo "${ROCM_VERSION}" > /etc/dnf/vars/rocmver \
+    && rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-AMD-ROCM \
+    && dnf --enablerepo amdgpu-${ROCM_VERSION} install -y amd-smi libdrm

@@ -1,0 +1,6 @@
+ARG BASEIMAGE=quay.io/jpolo/rim-kmm:bootc
+FROM ${BASEIMAGE}
+
+COPY azure/cloud-setup.sh /tmp
+RUN /tmp/cloud-setup.sh && rm -f /tmp/cloud-setup.sh
+COPY azure/files/ /
