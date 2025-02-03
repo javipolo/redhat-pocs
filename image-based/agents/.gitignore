@@ -2,5 +2,7 @@ build
 images
 *.rpm
 *.gpg
+.env
 .env.*
 ansible/server/collections
+ansible/ansible.cfg

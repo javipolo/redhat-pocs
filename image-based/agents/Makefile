@@ -1,11 +1,13 @@
 PROJECT ?= agent
+PROJECT_ENV ?= .env.${PROJECT}
 IMAGE_NAME ?= quay.io/jpolo/rhel-image-mode:${PROJECT}
 IMAGE_BUILDER_CONFIG=$(abspath .)/config.toml
 DISK_TYPE ?= qcow2
 VM_NAME ?= rhel-image-mode
 VM_MAC ?= fa:ba:da:ba:fa:da
 
--include .env.$(PROJECT)
+-include .env
+-include ${PROJECT_ENV}
 
 BOOTC_IMAGE_BUILDER ?= quay.io/centos-bootc/bootc-image-builder
 GRAPH_ROOT=$(shell podman info --format '{{ .Store.GraphRoot }}')
@@ -24,12 +26,13 @@ default: help
 all: image disk vm-delete vm-create
 
 .PHONY: image
-image: ## Build container image
+image: ansible/ansible.cfg ## Build container image
 	podman build \
+		--no-cache \
 		-t $(IMAGE_NAME) \
 		-f Containerfile.${PROJECT} \
-		$(FALCON_CID:%=--build-arg FALCON_CID=%) \
-		$(DD_API_KEY:%=--build-arg DD_API_KEY=%) \
+		$(PROJECT:%=--build-arg PROJECT=%) \
+		$(PROJECT_ENV:%=--build-arg-file %) \
 	.
 
 .PHONY: disk
@@ -86,7 +89,11 @@ help:
 		}\
 	' $(MAKEFILE_LIST)
 
+ansible/ansible.cfg:
+	@$(ANSIBLE_AUTOMATION_HUB_TOKEN:%=ANSIBLE_AUTOMATION_HUB_TOKEN=${ANSIBLE_AUTOMATION_HUB_TOKEN} envsubst < ansible/ansible.cfg.template > ansible/ansible.cfg)
+
+
 run-ansible: ## Run ansible in the VM
 	mkdir -p ansible/server/collections
 	$(ANSIBLE_COLLECTION:%=ansible-galaxy collection install ${ANSIBLE_COLLECTION} --collections-path ansible/server/collections)
-	ANSIBLE_CONFIG=ansible/server/ansible.cfg ansible-playbook ansible/${PROJECT}.yaml
+	ANSIBLE_CONFIG=ansible/server/ansible.cfg ansible-playbook ansible/${PROJECT}/playbook.yaml

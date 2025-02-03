@@ -16,18 +16,21 @@ RUN dnf install -y python3-pip && \
                 yq
 
 ENV ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible
+ENV ANSIBLE_CONFIG=$ANSIBLE_COLLECTIONS_PATHS/ansible.cfg
 ARG PROJECT
 COPY ansible/$PROJECT $ANSIBLE_COLLECTIONS_PATHS
+COPY ansible/ansible.cfg $ANSIBLE_CONFIG
 
 ARG ANSIBLE_COLLECTION
 RUN ansible-galaxy collection install $ANSIBLE_COLLECTION
 
-ARG DD_API_KEY
-# Disable all handlers
-RUN yq -y 'map(.when = false)' /tmp/ansible/ansible_collections/datadog/dd/roles/agent/handlers/main.yml > /tmp/edited.yaml \
-    && mv /tmp/edited.yaml /tmp/ansible/ansible_collections/datadog/dd/roles/agent/handlers/main.yml
-RUN ansible-playbook \
-      --connection=local \
-      --inventory 127.0.0.1, \
-      -e datadog_skip_running_check=true \
-      /tmp/ansible/playbook.yaml
+ARG rhn_username
+ARG rhn_password
+# RUN ansible-playbook \
+#       -vvvv \
+#       --connection=local \
+#       --inventory 127.0.0.1, \
+#       -e rhn_username=$rhn_username \
+#       -e rhn_password=$rhn_password \
+#       -e omit_rhn_output=false \
+#       /tmp/ansible/playbook.yaml

@@ -8,8 +8,20 @@ RUN echo -e "%wheel\tALL=(ALL)\tNOPASSWD: ALL" > "/etc/sudoers.d/%wheel" \
 # COPY opt.mount /usr/lib/systemd/system/opt.mount
 # RUN mkdir -p /var/opt/overlay-upper /var/opt/overlay-work && systemctl enable opt.mount
 
-RUN dnf install -y \
-      vim-enhanced
+RUN dnf install -y vim-enhanced
 
-RUN dnf install -y \
-    python3-pip
+RUN dnf install -y python3-pip && \
+    python3 -m venv /tmp/ansible-venv && \
+    pip install ansible
+
+ENV ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible
+ARG PROJECT
+COPY ansible/$PROJECT $ANSIBLE_COLLECTIONS_PATHS
+
+ARG ANSIBLE_COLLECTION
+RUN ansible-galaxy collection install $ANSIBLE_COLLECTION
+
+RUN ansible-playbook \
+      --connection=local \
+      --inventory 127.0.0.1, \
+      /tmp/ansible/playbook.yaml
