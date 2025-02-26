@@ -1,0 +1,37 @@
+FROM registry.redhat.io/rhel9/rhel-bootc:9.4
+
+# Image mode does not support customizations.files in config.toml, so we inject sudoers file from here
+RUN echo -e "%wheel\tALL=(ALL)\tNOPASSWD: ALL" > "/etc/sudoers.d/%wheel" \
+    && chmod 0440 /etc/sudoers.d/%wheel
+
+# # Mount an overlay fs on /opt so it's readwrite and no SELinux tweaks are necessary
+# COPY opt.mount /usr/lib/systemd/system/opt.mount
+# RUN mkdir -p /var/opt/overlay-upper /var/opt/overlay-work && systemctl enable opt.mount
+
+RUN dnf install -y vim-enhanced
+     ansible-core \
+     rhel-system-roles
+
+RUN dnf install -y python3-blivet
+     libblockdev-crypto \
+     libblockdev-dm \
+     libblockdev-lvm \
+     libblockdev-mdraid \
+     libblockdev-swap \
+     vdo \
+     kmod-kvdo \
+     xfsprogs
+
+RUN dnf install -y firewalld
+
+ENV ANSIBLE_COLLECTIONS_PATHS=/tmp/ansible
+ARG PROJECT
+COPY ansible/$PROJECT $ANSIBLE_COLLECTIONS_PATHS
+
+# ARG ANSIBLE_COLLECTION
+# RUN test -n "$ANSIBLE_COLLECTION" && ansible-galaxy collection install $ANSIBLE_COLLECTION || true
+
+# RUN ansible-playbook \
+#       --connection=local \
+#       --inventory 127.0.0.1, \
+#       /tmp/ansible/playbook.yaml

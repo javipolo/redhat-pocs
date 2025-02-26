@@ -1,5 +1,19 @@
 # Generic problems
 
+## alternatives is not working
+EDIT: Fixed in RHEL 9.5. See https://github.com/coreos/rpm-ostree/issues/1614
+`alternatives` is not working, not in build time or runtime
+
+To work at build time:
+```
+ln -s /usr/lib/alternatives /var/lib/alternatives
+```
+
+To work also at run time:
+```
+mkdir /var/lib/alternatives
+```
+
 ## system manager detection
 Methods for detecting the system manager might fail when running in `podman build` environment
 
@@ -51,17 +65,22 @@ WantedBy=multi-user.target
 
 ### At runtime
 
-It should work properly, unless the playbook ends up trying to modify files outside of /var or /etc
+First idea is that it should work properly, unless the playbook ends up trying to modify files outside of /var or /etc
 
 It will obviously fail if it needs to install RPMs
 
-#### Possible solutions
+However, it does not seem to be so straightforward
 
-Run ansible at build time to install and set everything up, then ansible can be run in runtime to update configurations and control that services are up and running
+Known problems at runtime:
+- files cannot be modified outside of /etc and /var (this is obvious0
+- `package` fails to work properly, even to just check that some packages are ALREADY installed, because `ansible_pkg_mgr` is detected as `atomic_container`
 
 ### At build time
 
-When running ansible at build time, everything that tries to check or restart a service will fail, so the roles need to be adjusted to include way sof skipping those checks, for example by adding tags, when clauses based in variables or any other way
+Known problems:
+
+- Managing services (restart, or check) does not work. The roles need to be adjusted to include way sof skipping those checks, for example by adding tags, when clauses based in variables or any other way
+- Using `package` seems to also be problematic: Unsupported parameters for (ansible.legacy.dnf) module: use_backend.
 
 # Problems with specific agents
 

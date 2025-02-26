@@ -1,0 +1,55 @@
+- hosts: all
+  become: true
+  roles:
+
+    - role: rhel-system-roles.network
+      vars:
+        network_connections:
+          - name: DBnic
+            state: up
+            type: ethernet
+            interface_name: enp2s0
+            autoconnect: yes
+            ip:
+              dhcp4: no
+              auto6: no
+              address: 1.2.3.4/24
+
+    - role: rhel-system-roles.storage
+      vars:
+        storage_skip_checks:
+          blivet_available: true
+          packages_installed: true
+        storage_volumes:
+          - name: extradisk
+            type: disk
+            disks:
+              - vdb
+            fs_type: xfs
+            fs_label: extradisk
+            mount_point: /var/mnt
+
+    - role: rhel-system-roles.firewall
+      vars:
+        firewall:
+          - previous: replaced
+          - service: http
+            state: enabled
+
+    - role: rhel-system-roles.timesync
+      vars:
+        timesync_ntp_servers:
+          - hostname: 0.pool.ntp.org
+            iburst: true
+          - hostname: 1.pool.ntp.org
+            iburst: true
+
+    - role: rhel-system-roles.logging
+      vars:
+        timesync_ntp_servers:
+          - hostname: 0.pool.ntp.org
+            iburst: true
+          - hostname: 1.pool.ntp.org
+            iburst: true
+
+  vars:

@@ -1,5 +1,5 @@
 PROJECT ?= agent
-PROJECT_ENV ?= .env.${PROJECT}
+PROJECT_ENV ?= $(wildcard .env.${PROJECT})
 IMAGE_NAME ?= quay.io/jpolo/rhel-image-mode:${PROJECT}
 IMAGE_BUILDER_CONFIG=$(abspath .)/config.toml
 DISK_TYPE ?= qcow2
@@ -28,7 +28,6 @@ all: image disk vm-delete vm-create
 .PHONY: image
 image: ansible/ansible.cfg ## Build container image
 	podman build \
-		--no-cache \
 		-t $(IMAGE_NAME) \
 		-f Containerfile.${PROJECT} \
 		$(PROJECT:%=--build-arg PROJECT=%) \
@@ -69,7 +68,9 @@ vm-create: ## Create VM out of the qcow2 file
 		--memory 4096 \
 		--vcpus 4 \
 		--disk path=${LIBVIRT_POOL_PATH}/${VM_NAME}.qcow2,bus=virtio \
+		--disk size=10 \
 		--network=network:default,mac="${VM_MAC}" \
+		--network=network:default \
 		--os-variant=rhel9.3 \
 		--import \
 		--noautoconsole \
