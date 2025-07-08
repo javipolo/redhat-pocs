@@ -49,7 +49,7 @@ apicurl ?= $(git_root)/bin/apicurl
 default: help
 
 help:   ## Shows this message.
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(shell echo "$(MAKEFILE_LIST) " | tac -s' ') | perl -pe 's/^.*Makefile.*?://g' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(shell echo "$(MAKEFILE_LIST) " | tac -s' ') | perl -pe 's/^.*Makefile.*?://g' | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 clusterid: ## Show cluster id
 	@echo $(CLUSTER_ID)
@@ -105,5 +105,13 @@ ai-kubeconfig:
 
 kubeconfig: ai-kubeconfig ## Generate kubeconfig and merge it into main kubeconfig file
 	KUBECONFIG=$(shell ls $(KUBECONFIGS_DIR)/*| paste -s -d:) oc config view --flatten > $(KUBECONFIG_DEFAULT)
+
+.PHONY: lvms
+lvms: ## Install and configure LVMS operator in a cluster
+	$(git_root)/scripts/lvms_setup.sh
+
+.PHONY: assisted-service
+assisted-service: ## Install and configure Assisted Service in a cluster
+	$(git_root)/scripts/assisted_service_setup.sh
 
 .PHONY: help
