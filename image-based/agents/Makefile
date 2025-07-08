@@ -3,6 +3,9 @@ PROJECT_ENV ?= $(wildcard .env.${PROJECT})
 IMAGE_NAME ?= quay.io/jpolo/rhel-image-mode:${PROJECT}
 IMAGE_BUILDER_CONFIG=$(abspath .)/config.toml
 DISK_TYPE ?= qcow2
+DISK_SIZE=200
+CPUS=8
+MEMORY=32768
 VM_NAME ?= rhel-image-mode
 VM_MAC ?= fa:ba:da:ba:fa:da
 
@@ -16,9 +19,6 @@ DISK_GID ?= $(shell id -g)
 LIBVIRT_POOL ?= images
 LIBVIRT_POOL_PATH ?= $(shell virsh pool-dumpxml ${LIBVIRT_POOL} --xpath "/pool/target/path/text()")
 
-KCLI_IMAGE ?= quay.io/karmab/kcli
-kcli ?= podman run --net host -i --rm --security-opt label=disable -v $(LIBVIRT_POOL_PATH):$(LIBVIRT_POOL_PATH) -v $(HOME)/.ssh:/root/.ssh -v $(HOME)/.kcli:/root/.kcli -v /var/run/libvirt:/var/run/libvirt -v $(PWD):/workdir -v /var/tmp:/ignitiondir $(KCLI_IMAGE)
-
 .PHONY: default
 default: help
 
@@ -30,6 +30,7 @@ image: ansible/ansible.cfg ## Build container image
 	podman build \
 		-t $(IMAGE_NAME) \
 		-f Containerfile.${PROJECT} \
+		${CONTAINER_TOOL_EXTRA_ARGS} \
 		$(PROJECT:%=--build-arg PROJECT=%) \
 		$(PROJECT_ENV:%=--build-arg-file %) \
 	.
@@ -46,12 +47,10 @@ disk: ## Build disk image
 	  -v ./build/store:/store \
 	  -v ./build/output:/output \
 	  $(IMAGE_BUILDER_CONFIG:%=-v %:/config$(suffix $(IMAGE_BUILDER_CONFIG))) \
-	  ${CONTAINER_TOOL_EXTRA_ARGS} \
 	  $(BOOTC_IMAGE_BUILDER) \
 	    $(IMAGE_BUILDER_CONFIG:%=--config /config$(suffix $(IMAGE_BUILDER_CONFIG))) \
 	    ${IMAGE_BUILDER_EXTRA_ARGS} \
 	    --chown $(DISK_UID):$(DISK_GID) \
-	    --local \
 	    --type $(DISK_TYPE) \
 	    $(IMAGE_NAME)
 	mkdir -p images
@@ -63,10 +62,11 @@ vm: vm-delete vm-create
 .PHONY: vm-create
 vm-create: ## Create VM out of the qcow2 file
 	sudo cp images/${PROJECT}.qcow2 ${LIBVIRT_POOL_PATH}/${VM_NAME}.qcow2
+	sudo qemu-img resize ${LIBVIRT_POOL_PATH}/${VM_NAME}.qcow2 200G
 	sudo virt-install \
 		--name ${VM_NAME} \
-		--memory 4096 \
-		--vcpus 4 \
+		--memory $(MEMORY) \
+		--vcpus $(CPUS) \
 		--disk path=${LIBVIRT_POOL_PATH}/${VM_NAME}.qcow2,bus=virtio \
 		--disk size=10 \
 		--network=network:default,mac="${VM_MAC}" \
@@ -78,7 +78,9 @@ vm-create: ## Create VM out of the qcow2 file
 
 .PHONY: vm-delete
 vm-delete: ## Delete VM
-	-$(kcli) delete vm -y ${VM_NAME}
+	-sudo virsh destroy ${VM_NAME}
+	-sudo virsh undefine ${VM_NAME} --remove-all-storage
+
 
 .PHONY: help
 help:
