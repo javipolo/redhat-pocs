@@ -17,7 +17,7 @@ else ifeq ($(CLUSTER_NAME),test)
 else
 # sno
 	SNO_MAC=fa:ba:da:fa:ba:01
-	CLUSTER_OCP_VERSION=4.16.0-rc.2
+	CLUSTER_OCP_VERSION=4.19.1
 endif
 
 CLUSTER_HOST_NUM=1
