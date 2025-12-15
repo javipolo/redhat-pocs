@@ -71,12 +71,12 @@ spec:
     resources:
       requests:
         storage: 40Gi
-  osImages:
-    - openshiftVersion: "4.19"
-      version: 9.6.20250402-0
-      url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.19/4.19.0/rhcos-4.19.0-x86_64-live-iso.x86_64.iso"
-      rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.19/4.19.0/rhcos-4.19.0-x86_64-live-rootfs.x86_64.iso"
-      cpuArchitecture: "x86_64"
+#  osImages:
+#    - openshiftVersion: "4.19"
+#      version: 9.6.20250402-0
+#      url: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.19/4.19.0/rhcos-4.19.0-x86_64-live-iso.x86_64.iso"
+#      rootFSUrl: "https://mirror.openshift.com/pub/openshift-v4/x86_64/dependencies/rhcos/4.19/4.19.0/rhcos-4.19.0-x86_64-live-rootfs.x86_64.iso"
+#      cpuArchitecture: "x86_64"
 EOF
 
 echo "Waiting for Assisted Service to be ready"

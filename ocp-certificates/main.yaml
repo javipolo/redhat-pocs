@@ -1,0 +1,18 @@
+---
+- name: Replace SSL certificates for Openshift Cluster
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Include vars
+      ansible.builtin.include_vars: vars.yaml
+      tags:
+        - always
+
+    - name: Include tasks that replace SSL certificates
+      ansible.builtin.include_tasks:
+        file: replace-certificates.yaml
+        apply:
+          tags: replace-certificates
+      tags:
+        - replace-certificates
+

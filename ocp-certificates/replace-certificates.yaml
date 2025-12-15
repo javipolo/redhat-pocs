@@ -1,0 +1,89 @@
+- environment:
+    KUBECONFIG: "{{ kubeConfigPath }}"
+  block:
+
+    - name: Create TLS secret for ingress controller
+      kubernetes.core.k8s:
+        state: present
+        namespace: openshift-ingress
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: cluster-ingress-domain
+          type: kubernetes.io/tls
+          data:
+            tls.crt: "{{ sslIngressCertificateFullChain | b64encode }}"
+            tls.key: "{{ sslIngressCertificateKey | b64encode }}"
+
+    - name: Patch default IngressController to use the TLS secret
+      kubernetes.core.k8s:
+        state: patched
+        kind: IngressController
+        name: default
+        namespace: openshift-ingress-operator
+        merge_type: merge
+        definition:
+          spec:
+            defaultCertificate:
+              name: cluster-ingress-domain
+
+    - name: Create TLS secret for API server
+      kubernetes.core.k8s:
+        state: present
+        namespace: openshift-config
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: "api-certs"
+          type: kubernetes.io/tls
+          data:
+            tls.crt: "{{ sslAPICertificateFullChain | b64encode }}"
+            tls.key: "{{ sslAPICertificateKey | b64encode }}"
+
+    - name: Patch API server with named certificate
+      kubernetes.core.k8s:
+        state: patched
+        kind: APIServer
+        name: cluster
+        merge_type: merge
+        definition:
+          spec:
+            servingCerts:
+              namedCertificates:
+                - names:
+                    - "api.{{ clusterName }}.{{ baseDomain }}"
+                  servingCertificate:
+                    name: "api-certs"
+
+    - name: Compute fingerprint for new API server certificate
+      shell: echo "{{ sslAPICertificateFullChain }}" | openssl x509 -noout -fingerprint
+      register: local_fp
+
+    - name: Wait until apiserver serves the new certificate
+      shell: |
+        echo | openssl s_client -connect api.{{ clusterName }}.{{ baseDomain }}:6443 2>/dev/null \
+          | openssl x509 -noout -fingerprint
+      register: remote_fp
+      retries: 100
+      delay: 5
+      until: remote_fp.stdout == local_fp.stdout
+
+    - name: Remove certificate-authority-data from kubeconfig
+      become: true
+      ansible.builtin.replace:
+        path: "{{ kubeConfigPath }}"
+        regexp: "^ +certificate-authority-data:.*"
+
+    - name: Wait for kube-apiserver ClusterOperator to finish progressing and be healthy
+      kubernetes.core.k8s_info:
+        kind: ClusterOperator
+        name: kube-apiserver
+      register: co_info
+      retries: 100
+      delay: 5
+      until: >
+        co_info.resources[0].status.conditions | selectattr('type','equalto','Progressing') | map(attribute='status') | first == 'False' and
+        co_info.resources[0].status.conditions | selectattr('type','equalto','Available') | map(attribute='status') | first == 'True' and
+        co_info.resources[0].status.conditions | selectattr('type','equalto','Degraded') | map(attribute='status') | first == 'False'
