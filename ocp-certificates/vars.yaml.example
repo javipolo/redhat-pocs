@@ -1,0 +1,33 @@
+baseDomain: redhat.com
+clusterName: sno
+kubeConfigPath: "{{ lookup('env', 'HOME') }}/.kube/config"
+
+# SSL Certificate for API
+sslAPICertificateKey: |
+  -----BEGIN EC PRIVATE KEY-----
+  BLAH BLAH
+  -----END EC PRIVATE KEY-----
+
+sslAPICertificateFullChain: |
+  -----BEGIN CERTIFICATE-----
+  BLAH BLAH
+  -----END CERTIFICATE-----
+
+  -----BEGIN CERTIFICATE-----
+  BLAH BLAH
+  -----END CERTIFICATE-----
+
+# SSL Certificate for Ingress (*.apps)
+sslIngressCertificateKey: |
+  -----BEGIN EC PRIVATE KEY-----
+  BLAH BLAH
+  -----END EC PRIVATE KEY-----
+
+sslIngressCertificateFullChain: |
+  -----BEGIN CERTIFICATE-----
+  BLAH BLAH
+  -----END CERTIFICATE-----
+
+  -----BEGIN CERTIFICATE-----
+  BLAH BLAH
+  -----END CERTIFICATE-----
