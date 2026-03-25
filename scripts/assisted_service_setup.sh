@@ -9,8 +9,8 @@ source "${root_dir}/scripts/functions.sh"
 acm_channel=release-2.13
 
 echo "Installing ACM"
-oc create namespace open-cluster-management
-oc create secret generic pull-secret -n open-cluster-management --from-file=.dockerconfigjson=${root_dir}/pull_secret.json --type=kubernetes.io/dockerconfigjson
+oc create namespace open-cluster-management --dry-run=client -oyaml | oc apply -f -
+oc create secret generic pull-secret -n open-cluster-management --from-file=.dockerconfigjson=${root_dir}/pull_secret.json --type=kubernetes.io/dockerconfigjson --dry-run=client -oyaml | oc apply -f -
 
 cat << EOF | oc apply -f -
 ---
