@@ -1,0 +1,29 @@
+#cloud-config
+users:
+  - name: root
+    lock_passwd: false
+    passwd: "$6$Zb2rK3xw$w3kPUZ/ZC3gB8JKjQYkE1NnF6ZAf94hxuRrFt5shXhxnqZbZ1gcIf1kQqXCuNloY6sT7zIfH4m.cwbrE1mcYv1"  # password = fedora notsecret
+    shell: /bin/bash
+ssh_pwauth: true
+disable_root: false
+chpasswd:
+  list: |
+    root:fedora
+  expire: false
+write_files:
+  - path: /etc/NetworkManager/system-connections/ipxe-static.nmconnection
+    permissions: '0600'
+    content: |
+      [connection]
+      id=ipxe-static
+      type=ethernet
+      interface-name=eth0
+      [ipv4]
+      address1=192.168.192.2/24,192.168.192.1
+      dns=1.1.1.1;
+      method=manual
+      [ipv6]
+      method=ignore
+runcmd:
+  - nmcli connection reload
+  - nmcli connection up ipxe-static

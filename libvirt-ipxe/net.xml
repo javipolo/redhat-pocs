@@ -1,0 +1,17 @@
+<network>
+  <name>ipxe</name>
+  <uuid>80f276d2-a52a-49aa-9bb0-4e73edb4881d</uuid>
+  <forward mode='nat'/>
+  <bridge name='ipxe' stp='on' delay='0'/>
+  <mtu size='1500'/>
+  <mac address='52:54:00:fa:ba:da'/>
+  <dns enable='no'/>
+  <ip family='ipv4' address='192.168.192.1' prefix='24'>
+    <!--
+    <dhcp>
+      <range start='192.168.192.2' end='192.168.192.254'/>
+    </dhcp>
+    !-->
+  </ip>
+</network>
+

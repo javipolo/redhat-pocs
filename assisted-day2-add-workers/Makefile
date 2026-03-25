@@ -30,6 +30,10 @@ CLUSTER_ISO_PATH=$(DAY2_ISO)
 extra-vms: ## Provision cluster nodes
 	@$(kcli) create vm $(KCLI_TEMPLATE_CLUSTER) -P nets=['{"name": "default", "mac": "fa:ba:da:fa:ba:dd"}'] $(CLUSTER_NAME)-4
 
+CLUSTER_ISO_PATH=$(DAY2_ISO)
+extra-vms2: ## Provision cluster nodes
+	@$(kcli) create vm $(KCLI_TEMPLATE_CLUSTER) -P nets=['{"name": "default", "mac": "fa:ba:da:fa:ba:de"}'] $(CLUSTER_NAME)-5
+
 .PHONY: wait-for-agent
 wait-for-agent: ## Wait for day2 agent to show up
 	@echo "Waiting for agent"
